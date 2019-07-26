@@ -524,3 +524,8 @@ floatToUchar = ElementwiseKernel(arguments="float *input, unsigned char *output"
 				operation = "output[i] = (unsigned char) ( -255*(input[i]-1));",
 				name = "floatToUchar_kernel")
 ########################################################################
+
+
+def Change_Rotation_Angle( new_angle ):
+  global viewRotation
+  viewRotation[1] = new_angle 

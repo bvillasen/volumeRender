@@ -21,16 +21,19 @@ from data_functions import *
 
 dataDir = '/home/bruno/Desktop/hard_drive_1/data/'
 inDir = dataDir + 'cosmo_sims/cholla_pm/256_dm_50Mpc/data/'
+outDir = 'image_output/'
 
 #Select CUDA Device
 useDevice = 0
 
-nFields = 1
+nFields = 2
 
-n_snapshots = 259
+save_images = True
+
+n_snapshots = 10
 snapshots = range(0, 259, 1) 
 
-n_frames = 1200
+n_frames = 20
 frames_per_snapshot = n_frames / n_snapshots
 
 data_format = 'cholla'
@@ -38,40 +41,44 @@ data_type = 'particles'
 data_field = 'density'
 normalization = 'global'
 log_data = True
-n_border = 3
+n_border = 2
+
+data_parameters_default = { 'data_format': data_format, 'normalization':normalization, 'log_data':log_data, 'n_border':n_border }
+
+data_parameters = {}
+data_parameters[0] = data_parameters_default
+data_parameters[0]['data_type'] = 'particles'
+data_parameters[0]['data_field'] = 'density'
+
+data_parameters[1] = data_parameters_default
+data_parameters[1]['data_type'] = 'particles'
+data_parameters[1]['data_field'] = 'density'
 
 nSnap = 0
 
+rotation_angle = 0
+total_rotation = 360. 
+delta_rotation = total_rotation / n_frames
 
 
 
+data_to_render_list = [ get_Data_to_Render( nSnap, inDir, data_parameters[i], stats=True ) for i in range(nFields)]
 
-data_dic = get_data( nSnap, inDir, data_format, data_type, data_field, stats=True )
-data_to_render = data_dic['data']
-stats = data_dic['stats']
-
-plotData_0 = prepare_data( data_to_render, log=log_data, normalize=normalization, stats=stats, n_border=3)
-
-def Change_Snapshot_Single_Field( nSnap, field_index, copyToScreen_list, inDir, data_format, data_type, data_field, stats=False, log=False, normalization='local', n_border=3  ):
-  plotData = get_Data_to_Render( nSnap, inDir, data_format, data_type, data_field, stats=stats, log=log, normalize=normalization, n_border=n_border )
-  copyToScreen = copyToScreen_list[field_index]
-  copyToScreen.set_src_host(plotData)
-  copyToScreen()
-  
-  
-
-data_to_render_list = [ plotData_0 ]
+#Get Dimensions of the data to render
 nz, ny, nx = data_to_render_list[0].shape
 nWidth, nHeight, nDepth = nx, ny, nz
 
+#Set the parameters for rendering each field
 volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'cmap_indx':0, 'transp_center':0, "transp_ramp": 2.5, 'density':0.03, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
+volumeRender.render_parameters[1] = { 'transp_type':'sigmoid', 'cmap_indx':0, 'transp_center':0, "transp_ramp": 2.5, 'density':0.03, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
+
 
 # Count the frames to change snapshot
 nFrame = 0
 
 #Initialize openGL
-volumeRender.width_GL = 512*4
-volumeRender.height_GL = 512*4
+volumeRender.width_GL = 512*2
+volumeRender.height_GL = 512*2
 volumeRender.nTextures = nFields
 volumeRender.nWidth = nWidth
 volumeRender.nHeight = nHeight
@@ -100,13 +107,20 @@ def sendToScreen( ):
 ########################################################################
 
 def stepFunction():
-  global  nSnap, nFrame
+  global  nSnap, nFrame, rotation_angle
   sendToScreen( )
+  if nFrame > 0 and save_images : volumeRender.save_image(dir=outDir, image_name='image')
+  if nFrame > 0: rotation_angle += delta_rotation
+  volumeRender.Change_Rotation_Angle( rotation_angle )
   nFrame += 1
   if nFrame % frames_per_snapshot == 0:
     nSnap += 1
+    if nSnap == n_snapshots:
+      print "Finished Animation" 
+      exit()
     print "Change Snapshot: {0}  Frame:{1}".format( nSnap, nFrame)
-    Change_Snapshot_Single_Field( nSnap, 0, copyToScreen_list, inDir, data_format, data_type, data_field, stats=True, log=log_data, normalization=normalization, n_border=n_border  )
+    for i in range(nFields):
+      Change_Snapshot_Single_Field( nSnap, i, copyToScreen_list, inDir, data_parameters[i], stats=True  )
 
 ########################################################################
 def specialKeyboardFunc( key, x, y ):

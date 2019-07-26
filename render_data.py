@@ -26,26 +26,47 @@ inDir = dataDir + 'cosmo_sims/cholla_pm/256_dm_50Mpc/data/'
 useDevice = 0
 
 
-nFields = 1
+nFields = 2
+
+
+
+
+data_format = 'cholla'
+data_type = 'particles'
+data_field = 'density'
+normalization = 'global'
+log_data = True
+n_border = 2
+
+data_parameters_default = { 'data_format': data_format, 'normalization':normalization, 'log_data':log_data, 'n_border':n_border }
+
+data_parameters = {}
+data_parameters[0] = data_parameters_default
+data_parameters[0]['data_type'] = 'particles'
+data_parameters[0]['data_field'] = 'density'
+
+data_parameters[1] = data_parameters_default
+data_parameters[1]['data_type'] = 'particles'
+data_parameters[1]['data_field'] = 'density'
+
 
 
 
 nSnap = 258
-data_dic = get_data( nSnap, inDir, 'cholla', 'particles', 'density', stats=True )
-data_to_render = data_dic['data']
-stats = data_dic['stats']
+data_to_render_list = [ get_Data_to_Render( nSnap, inDir, data_parameters[i], stats=True ) for i in range(nFields)]
 
-
-plotData_0 = prepare_data( data_to_render, log=True, normalize='global', stats=stats, n_border=3)
-data_to_render_list = [ plotData_0 ]
+#Get Dimensions of the data to render
 nz, ny, nx = data_to_render_list[0].shape
 nWidth, nHeight, nDepth = nx, ny, nz
 
+#Set the parameters for rendering each field
 volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'cmap_indx':0, 'transp_center':0, "transp_ramp": 2.5, 'density':0.03, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
+volumeRender.render_parameters[1] = { 'transp_type':'sigmoid', 'cmap_indx':0, 'transp_center':0, "transp_ramp": 2.5, 'density':0.03, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
+
 
 #Initialize openGL
-volumeRender.width_GL = 512*4
-volumeRender.height_GL = 512*4
+volumeRender.width_GL = 512*2
+volumeRender.height_GL = 512*2
 volumeRender.nTextures = nFields
 volumeRender.nWidth = nWidth
 volumeRender.nHeight = nHeight

@@ -7,7 +7,11 @@ from load_data_cholla import load_snapshot_data_particles
 
 
 
-def get_data( nSnap, inDir, format, type, field, stats=None ):
+def get_data( nSnap, inDir, data_parameters, stats=None ):
+  
+  format = data_parameters['data_format']
+  type = data_parameters['data_type']
+  field = data_parameters['data_field']
   data_dic = {}
   if format == 'cholla':
     if type == 'particles':
@@ -30,14 +34,23 @@ def get_data( nSnap, inDir, format, type, field, stats=None ):
   return data_dic
       
 
-def get_Data_to_Render( nSnap, inDir, data_format, data_type, data_field, stats=True, log=False, normalize='local', n_border=3 ):
-  data_dic = get_data( nSnap, inDir, data_format, data_type, data_field, stats=True )
+def get_Data_to_Render( nSnap, inDir, data_parameters, stats=True,  ):
+  
+  
+  data_dic = get_data( nSnap, inDir, data_parameters, stats=True )
   data_to_render = data_dic['data']
   stats_dic = data_dic['stats']
-  plotData = prepare_data( data_to_render, log=log, normalize=normalize, stats=stats_dic, n_border=3)
+  plotData = prepare_data( data_to_render, data_parameters, stats=stats_dic )
   return plotData
   
-    
+
+def Change_Snapshot_Single_Field( nSnap, field_index, copyToScreen_list, inDir, data_parameters, stats=False  ):
+  plotData = get_Data_to_Render( nSnap, inDir, data_parameters, stats=stats )
+  copyToScreen = copyToScreen_list[field_index]
+  copyToScreen.set_src_host(plotData)
+  copyToScreen()
+  
+  
   
 def set_frame( data, n ):
   val = 1.0
@@ -56,7 +69,12 @@ def set_frame( data, n ):
   return data
 
 
-def prepare_data( plotData,  log=False, normalize='local', n_border=3, stats=None ):
+def prepare_data( plotData,  data_parameters, stats=None ):
+  
+  log = data_parameters['log_data']
+  normalize = data_parameters['normalization']
+  n_border = data_parameters['n_border']
+  
   if normalize == 'local':
     if log : plotData = np.log10(plotData + 1)
     plotData -= plotData.min()
