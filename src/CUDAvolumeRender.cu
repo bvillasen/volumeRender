@@ -91,82 +91,81 @@ __device__ uint rgbaFloatToInt(float4 rgba)
 
 
 extern "C"{
-  __global__ void
-  d_render(uint *d_output, uint imageW, uint imageH,
-	  float density, float brightness,
-	  float transferOffset, float transferScale)
-  {
-      const int maxSteps = 3000;
-      const float tstep = 0.001f;
-      const float opacityThreshold = 0.95f;
-      const float3 boxMin = make_float3(-1.0f, -1.0f, -1.0f);
-      const float3 boxMax = make_float3(1.0f, 1.0f, 1.0f);
+__global__ void d_render(uint *d_output, uint imageW, uint imageH, float density, float brightness,  float transferOffset, float transferScale){
+  const int maxSteps = 10000;
+  const float tstep = 0.001f;
+  const float opacityThreshold = 0.99f;
+  const float3 boxMin = make_float3(-1.0f, -1.0f, -1.0f);
+  const float3 boxMax = make_float3(1.0f, 1.0f, 1.0f);
 
-	  uint x = blockIdx.x*blockDim.x + threadIdx.x;
-      uint y = blockIdx.y*blockDim.y + threadIdx.y;
-      if ((x >= imageW) || (y >= imageH)) return;
+  uint x = blockIdx.x*blockDim.x + threadIdx.x;
+  uint y = blockIdx.y*blockDim.y + threadIdx.y;
+  if ((x >= imageW) || (y >= imageH)) return;
 
-      float u = (x / (float) imageW)*2.0f-1.0f;
-      float v = (y / (float) imageH)*2.0f-1.0f;
+  float u = (x / (float) imageW)*2.0f-1.0f;
+  float v = (y / (float) imageH)*2.0f-1.0f;
 
-      // calculate eye ray in world space
-      Ray eyeRay;
-      eyeRay.o = make_float3(mul(c_invViewMatrix, make_float4(0.0f, 0.0f, 0.0f, 1.0f)));
-      eyeRay.d = normalize(make_float3(u, v, -2.0f));
-      eyeRay.d = mul(c_invViewMatrix, eyeRay.d);
+  // calculate eye ray in world space
+  Ray eyeRay;
+  eyeRay.o = make_float3(mul(c_invViewMatrix, make_float4(0.0f, 0.0f, 0.0f, 1.0f)));
+  eyeRay.d = normalize(make_float3(u, v, -2.0f));
+  eyeRay.d = mul(c_invViewMatrix, eyeRay.d);
 
-      // find intersection with box
-	  float tnear, tfar;
-	  int hit = intersectBox(eyeRay, boxMin, boxMax, &tnear, &tfar);
-      if (!hit) return;
-	  if (tnear < 0.0f) tnear = 0.0f;     // clamp to near plane
+  // find intersection with box
+  float tnear, tfar;
+  int hit = intersectBox(eyeRay, boxMin, boxMax, &tnear, &tfar);
+  if (!hit) return;
+  if (tnear < 0.0f) tnear = 0.0f;     // clamp to near plane
 
-      // march along ray from front to back, accumulating color
-      float4 sum = make_float4(0.0f);
-      float t = tnear;
-      float3 pos = eyeRay.o + eyeRay.d*tnear;
-      float3 step = eyeRay.d*tstep;
+  // march along ray from front to back, accumulating color
+  float4 sum = make_float4(0.0f);
+  float t = tnear;
+  float3 pos = eyeRay.o + eyeRay.d*tnear;
+  float3 step = eyeRay.d*tstep;
 
-      for(int i=0; i<maxSteps; i++) {
-	  // read from 3D texture
-	  // remap position to [0, 1] coordinates
-	  float sample = tex3D(tex, pos.x*0.5f+0.5f, pos.y*0.5f+0.5f, pos.z*0.5f+0.5f);
-// 	  sample = 0.7f;
-	  //sample *= 64.0f;    // scale for 10-bit data
+  for(int i=0; i<maxSteps; i++) {
+    // read from 3D texture
+    // remap position to [0, 1] coordinates
+    float sample = tex3D(tex, pos.x*0.5f+0.5f, pos.y*0.5f+0.5f, pos.z*0.5f+0.5f);
 
-	  // lookup in transfer function texture
-  //         float4 col = tex1D(transferTex, (sample-transferOffset)*transferScale);
-	      float4 col;
-	      float nCol =  (sample-transferOffset)*transferScale;
-	      col.x = tex2D(transferTex, 0.f , nCol);
-	      col.y = tex2D(transferTex, 0.33f , nCol);
-	      col.z = tex2D(transferTex, 0.66f , nCol);
-	      col.w = tex2D(transferTex, 1.f , nCol);
-	  col.w *= density;
+    //sample *= 64.0f;    // scale for 10-bit data
 
-	  // "under" operator for back-to-front blending
-	  // sum = lerp(sum, col, col.w);
+    // lookup in transfer function texture
+    // float4 col = tex1D(transferTex, (sample-transferOffset)*transferScale);
+    float4 col;
+    float nCol =  (sample-transferOffset)*transferScale;
+    col.x = tex2D(transferTex, 0.f , nCol);
+    col.y = tex2D(transferTex, 0.33f , nCol);
+    col.z = tex2D(transferTex, 0.66f , nCol);
+    col.w = tex2D(transferTex, 1.f , nCol);
+    col.w *= density;
+    col.w *= sqrt(sample);
+    // col.w *= sample*sample;
 
-	  // pre-multiply alpha
-	  col.x *= col.w;
-	  col.y *= col.w;
-	  col.z *= col.w;
-	  // "over" operator for front-to-back blending
-	  sum = sum + col*(1.0f - sum.w);
+    // "under" operator for back-to-front blending
+    // sum = lerp(sum, col, col.w);
 
-	  // exit early if opaque
-	  if (sum.w > opacityThreshold)
-	      break;
+    // pre-multiply alpha
+    col.x *= col.w;
+    col.y *= col.w;
+    col.z *= col.w;
+    // "over" operator for front-to-back blending
+    sum = sum + col*(1.0f - sum.w);
 
-	  t += tstep;
-	  if (t > tfar) break;
+    // exit early if opaque
+    if (sum.w > opacityThreshold)
+        break;
 
-	  pos += step;
-      }
-      sum *= brightness;
+    t += tstep;
+    if (t > tfar) break;
 
-      // write output color
-      d_output[y*imageW + x] = rgbaFloatToInt(sum);
-//       d_output[y*imageW + x] = 100;
+    pos += step;
   }
+  
+  sum *= brightness;
+  // write output color
+  d_output[y*imageW + x] = rgbaFloatToInt(sum);
 }
+
+
+} //extern C
