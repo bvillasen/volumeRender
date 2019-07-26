@@ -8,7 +8,6 @@ from load_data_cholla import load_snapshot_data_particles
 
 
 def get_data( nSnap, inDir, data_parameters, stats=None ):
-  
   format = data_parameters['data_format']
   type = data_parameters['data_type']
   field = data_parameters['data_field']
@@ -35,8 +34,6 @@ def get_data( nSnap, inDir, data_parameters, stats=None ):
       
 
 def get_Data_to_Render( nSnap, inDir, data_parameters, stats=True,  ):
-  
-  
   data_dic = get_data( nSnap, inDir, data_parameters, stats=True )
   data_to_render = data_dic['data']
   stats_dic = data_dic['stats']
@@ -44,13 +41,63 @@ def get_Data_to_Render( nSnap, inDir, data_parameters, stats=True,  ):
   return plotData
   
 
-def Change_Snapshot_Single_Field( nSnap, field_index, copyToScreen_list, inDir, data_parameters, stats=False  ):
-  plotData = get_Data_to_Render( nSnap, inDir, data_parameters, stats=stats )
-  copyToScreen = copyToScreen_list[field_index]
-  copyToScreen.set_src_host(plotData)
-  copyToScreen()
-  
-  
+def get_Data_for_Interpolation( nSnap, inDir, data_parameters,  data_for_interpolation=None ):
+  if data_for_interpolation == None: 
+    data_for_interpolation = {}
+    nSnap_0 = nSnap
+    nSnap_1 = nSnap_0 + 1
+    print(" Lodading Snapshot: {0}").format(nSnap_0)
+    data_dic_0 = get_data( nSnap_0, inDir, data_parameters, stats=True )
+    data_0 = data_dic_0['data']
+    stats = data_dic_0['stats']
+    print(" Lodading Snapshot: {0}").format(nSnap_1)
+    data_dic_1 = get_data( nSnap_1, inDir, data_parameters, stats=False )
+    data_1 = data_dic_1['data']
+    data_for_interpolation['stats'] = stats
+    data_for_interpolation['nSnap'] = nSnap_0
+    data_for_interpolation[0] = data_0
+    data_for_interpolation[1] = data_1
+  else:
+    nSnap_prev = data_for_interpolation['nSnap']
+    if nSnap - nSnap_prev != 1: print( 'ERROR: Interpolation snapshot sequence')
+    nSnap_0 = nSnap
+    nSnap_1 = nSnap_0 + 1
+    data_for_interpolation['nSnap'] = nSnap_0
+    print( " Swaping data snapshot: {0}".format(nSnap_0) )
+    data_for_interpolation[0] = data_for_interpolation[1].copy()
+    print(" Lodading Snapshot: {0}").format(nSnap_1)
+    data_dic_1 = get_data( nSnap_1, inDir, data_parameters, stats=False )
+    data_1 = data_dic_1['data']
+    data_for_interpolation[1] = data_1
+  return data_for_interpolation
+
+def get_Data_List_to_Render_Interpolation( nSnap, inDir, nFields, current_frame, frames_per_snapshot, data_parameters, data_for_interpolation ):
+  if data_for_interpolation == None:
+    data_for_interpolation = {}
+    for i in range(nFields):
+      data_for_interpolation[i] = None
+
+  data_to_render_list = []
+  for i in range( nFields ):
+    if current_frame % frames_per_snapshot == 0:
+      data_for_interpolation[i] = get_Data_for_Interpolation( nSnap, inDir, data_parameters[i], data_for_interpolation=data_for_interpolation[i]  )
+    stats = data_for_interpolation[i]['stats']
+    data_interpolated = Interpolate_Data( current_frame, frames_per_snapshot, data_for_interpolation[i] )
+    plotData = prepare_data( data_interpolated, data_parameters[0], stats=stats )
+    data_to_render_list.append( plotData )
+  return data_to_render_list, data_for_interpolation
+
+
+
+def Interpolate_Data( current_frame, frames_per_snapshot, data_for_interpolation ):
+  nSnap = data_for_interpolation['nSnap']
+  data_0 = data_for_interpolation[0]
+  data_1 = data_for_interpolation[1]
+  alpha = float( current_frame % frames_per_snapshot ) / frames_per_snapshot
+  print( ' Interpolating Snapshots  {0} -> {1}   alpha:{2}'.format( nSnap, nSnap+1, alpha) )
+  if alpha >= 1: print('ERROR: Interpolation alpha >= 1')
+  data_interpolated = data_0 + alpha * ( data_1 - data_0 )
+  return data_interpolated
   
 def set_frame( data, n ):
   val = 1.0

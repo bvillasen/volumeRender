@@ -26,15 +26,28 @@ outDir = 'image_output/'
 #Select CUDA Device
 useDevice = 0
 
-nFields = 2
+nFields = 1
+
+interpolation = False
+data_for_interpolation = None
 
 save_images = True
 
-n_snapshots = 10
+n_snapshots = 259
 snapshots = range(0, 259, 1) 
 
-n_frames = 20
+n_frames = 259*10
 frames_per_snapshot = n_frames / n_snapshots
+
+rotation_angle = 0
+total_rotation = 360
+delta_rotation = float(total_rotation) / n_frames
+
+
+stats = None
+
+# Count the frames to change snapshot
+current_frame = 0
 
 data_format = 'cholla'
 data_type = 'particles'
@@ -56,13 +69,14 @@ data_parameters[1]['data_field'] = 'density'
 
 nSnap = 0
 
-rotation_angle = 0
-total_rotation = 360. 
-delta_rotation = total_rotation / n_frames
+if interpolation:
+  data_to_render_list, data_for_interpolation = get_Data_List_to_Render_Interpolation( nSnap, inDir, nFields, current_frame, frames_per_snapshot, data_parameters, data_for_interpolation )
+
+ 
+else:
+  data_to_render_list = [ get_Data_to_Render( nSnap, inDir, data_parameters[i], stats=True ) for i in range(nFields)]
 
 
-
-data_to_render_list = [ get_Data_to_Render( nSnap, inDir, data_parameters[i], stats=True ) for i in range(nFields)]
 
 #Get Dimensions of the data to render
 nz, ny, nx = data_to_render_list[0].shape
@@ -73,12 +87,11 @@ volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'cmap_indx':0, 't
 volumeRender.render_parameters[1] = { 'transp_type':'sigmoid', 'cmap_indx':0, 'transp_center':0, "transp_ramp": 2.5, 'density':0.03, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
 
 
-# Count the frames to change snapshot
-nFrame = 0
+
 
 #Initialize openGL
-volumeRender.width_GL = 512*2
-volumeRender.height_GL = 512*2
+volumeRender.width_GL = 512*4
+volumeRender.height_GL = 512*4
 volumeRender.nTextures = nFields
 volumeRender.nWidth = nWidth
 volumeRender.nHeight = nHeight
@@ -102,25 +115,30 @@ def sendToScreen( ):
   global send_data
   if send_data:
     for i in range(nFields): 
-      copyToScreen_list[i]
+      copyToScreen_list[i]()
     send_data = False 
 ########################################################################
 
 def stepFunction():
-  global  nSnap, nFrame, rotation_angle
+  global  nSnap, current_frame, rotation_angle, data_for_interpolation, send_data, data_to_render_list, copyToScreen_list
   sendToScreen( )
-  if nFrame > 0 and save_images : volumeRender.save_image(dir=outDir, image_name='image')
-  if nFrame > 0: rotation_angle += delta_rotation
+  if current_frame > 0 and save_images : volumeRender.save_image(dir=outDir, image_name='image')
+  if current_frame > 0: rotation_angle += delta_rotation
   volumeRender.Change_Rotation_Angle( rotation_angle )
-  nFrame += 1
-  if nFrame % frames_per_snapshot == 0:
-    nSnap += 1
-    if nSnap == n_snapshots:
-      print "Finished Animation" 
-      exit()
-    print "Change Snapshot: {0}  Frame:{1}".format( nSnap, nFrame)
-    for i in range(nFields):
-      Change_Snapshot_Single_Field( nSnap, i, copyToScreen_list, inDir, data_parameters[i], stats=True  )
+  if interpolation:
+    current_frame, nSnap = volumeRender.Update_Frame_Number( nSnap, current_frame, frames_per_snapshot )
+    data_to_render_list, data_for_interpolation = get_Data_List_to_Render_Interpolation( nSnap, inDir, nFields, current_frame, frames_per_snapshot, data_parameters, data_for_interpolation )
+    volumeRender.Change_Data_to_Render( nFields, data_to_render_list, copyToScreen_list )
+  else:
+    current_frame += 1
+    if current_frame % frames_per_snapshot == 0:
+      nSnap += 1
+      if nSnap == n_snapshots:
+        print "Finished Animation" 
+        exit()
+      print "Change Snapshot: {0}  Frame:{1}".format( nSnap, current_frame)
+      for i in range(nFields):
+        volumeRender.Change_Snapshot_Single_Field( nSnap, i, copyToScreen_list, inDir, data_parameters[i], stats=True  )
 
 ########################################################################
 def specialKeyboardFunc( key, x, y ):

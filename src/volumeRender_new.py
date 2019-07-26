@@ -25,9 +25,11 @@ parentDirectory = currentDirectory[:currentDirectory.rfind("/")]
 devDir = '/home/bruno/Desktop/Dropbox/Developer/pyCUDA/'
 myToolsDirectory = currentDirectory + '/src/'
 volRenderDirectory = currentDirectory + '/src/'
-sys.path.extend( [myToolsDirectory, volRenderDirectory] )
+dataSrcDir = currentDirectory + '/data_src/'
+sys.path.extend( [myToolsDirectory, volRenderDirectory, dataSrcDir ] )
 from cudaTools import np3DtoCudaArray, np2DtoCudaArray
 from cudaTools import setCudaDevice, getFreeMemory, gpuArray3DtocudaArray, np3DtoCudaArray
+from data_functions import *
 
 nWidth = 128
 nHeight = 128
@@ -529,3 +531,25 @@ floatToUchar = ElementwiseKernel(arguments="float *input, unsigned char *output"
 def Change_Rotation_Angle( new_angle ):
   global viewRotation
   viewRotation[1] = new_angle 
+  
+
+def Update_Frame_Number( nSnap, current_frame, frames_per_snapshot ):
+  current_frame += 1
+  if current_frame % frames_per_snapshot == 0: nSnap += 1
+  return current_frame, nSnap
+
+
+
+def Change_Snapshot_Single_Field( nSnap, field_index, copyToScreen_list, inDir, data_parameters, stats=False  ):
+  plotData = get_Data_to_Render( nSnap, inDir, data_parameters, stats=stats )
+  copyToScreen = copyToScreen_list[field_index]
+  copyToScreen.set_src_host(plotData)
+  copyToScreen()
+  
+def Change_Data_to_Render( nFields, data_to_render_list, copyToScreen_list ):
+  for i in range(nFields):
+    plotData = data_to_render_list[i]
+    copyToScreen = copyToScreen_list[i]
+    copyToScreen.set_src_host(plotData)
+    copyToScreen()
+  
