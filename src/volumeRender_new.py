@@ -57,7 +57,7 @@ transfer_scale = 1.0
 
 
 
-colorMaps = [ 'inferno',  'viridis', 'jet', 'nipy_spectral', 'CMRmap', 'bone', 'hot', 'copper']
+colorMaps = [ 'inferno', 'plasma', 'magma', 'viridis', 'jet', 'nipy_spectral', 'CMRmap', 'bone', 'hot', 'copper']
 # colorMaps = plt.colormaps()
 
 

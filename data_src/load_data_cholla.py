@@ -7,17 +7,18 @@ import numpy as np
 # import matplotlib.cm as cm
 
 
-def load_snapshot_data_grid( nSnap, inFileName ):
-  # inFileName = '{0}.h5'.format(nSnap)
-  snapFile = h5.File( inFileName, 'r')
-  t = snapFile.attrs['t'][0]
+def load_snapshot_data_grid( nSnap, inputDir ):
+  inFileName = 'grid_{0}.h5'.format(nSnap)
+  snapFile = h5.File( inputDir + inFileName, 'r')
+  t = snapFile.attrs['t']
   inputKeys = snapFile.keys()
-  grid_keys = [ 'density', 'momentum_x', 'momentum_y', 'momentum_z', 'Energy']
-  optional_keys = [ 'GasEnergy', 'gravity_density', 'potential', 'potential_grav']
+  # grid_keys = [ 'density', 'momentum_x', 'momentum_y', 'momentum_z', 'Energy']
+  # optional_keys = [ 'GasEnergy', 'gravity_density', 'potential', 'potential_grav']
+  grid_keys = snapFile.keys()
   data_grid = {}
   data_grid['t'] = t
-  for key in optional_keys:
-    if key in inputKeys: grid_keys.append( key )
+  # for key in optional_keys:
+  #   if key in inputKeys: grid_keys.append( key )
   for key in grid_keys:
     data_grid[key] = snapFile[key]
   return data_grid

@@ -19,54 +19,67 @@ from cudaTools import setCudaDevice, getFreeMemory, gpuArray3DtocudaArray, np3Dt
 from render_functions import *
 from data_functions import *
 
-dataDir = '/home/bruno/Desktop/hard_drive_1/data/'
-inDir = dataDir + 'cosmo_sims/cholla_pm/256_dm_50Mpc/data/'
+dataDir = '/home/bruno/Desktop/data/'
+# inDir = dataDir + 'cosmo_sims/cholla_pm/256_cool_uv_50Mpc/data_PPMC_HLLC_SIMPLE_eta0.001_0.0400/'
+inDir = dataDir + 'cosmo_sims/cholla_pm/sphere_explosion/data_ppmp/'
+# inDir = dataDir + 'cosmo_sims/cholla_pm/256_dm_50Mpc/data/'
 
 #Select CUDA Device
 useDevice = 0
 
+nSnap = 10
 
-nFields = 2
+nFields = 1
 
+
+load_stats = False
 
 
 
 data_format = 'cholla'
 data_type = 'particles'
 data_field = 'density'
-normalization = 'global'
-log_data = True
-n_border = 2
+normalization = 'local'
+log_data = False
+n_border = 1
+
+if normalization == 'global': load_stats = True
 
 data_parameters_default = { 'data_format': data_format, 'normalization':normalization, 'log_data':log_data, 'n_border':n_border }
 
 data_parameters = {}
-data_parameters[0] = data_parameters_default
-data_parameters[0]['data_type'] = 'particles'
+data_parameters[0] = data_parameters_default.copy()
+data_parameters[0]['data_type'] = 'grid'
 data_parameters[0]['data_field'] = 'density'
 
-data_parameters[1] = data_parameters_default
-data_parameters[1]['data_type'] = 'particles'
+data_parameters[1] = data_parameters_default.copy()
+data_parameters[1]['data_type'] = 'grid'
 data_parameters[1]['data_field'] = 'density'
 
+data_parameters[2] = data_parameters_default.copy()
+data_parameters[2]['data_type'] = 'grid'
+data_parameters[2]['data_field'] = 'temperature'
 
 
 
-nSnap = 258
-data_to_render_list = [ get_Data_to_Render( nSnap, inDir, data_parameters[i], stats=True ) for i in range(nFields)]
+
+
+
+data_to_render_list = [ get_Data_to_Render( nSnap, inDir, data_parameters[i], stats=load_stats ) for i in range(nFields)]
+
 
 #Get Dimensions of the data to render
 nz, ny, nx = data_to_render_list[0].shape
 nWidth, nHeight, nDepth = nx, ny, nz
 
 #Set the parameters for rendering each field
-volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'cmap_indx':0, 'transp_center':0, "transp_ramp": 2.5, 'density':0.03, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
-volumeRender.render_parameters[1] = { 'transp_type':'sigmoid', 'cmap_indx':0, 'transp_center':0, "transp_ramp": 2.5, 'density':0.03, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
-
+volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'cmap_indx':0, 'transp_center':0, "transp_ramp": 3, 'density':0.03, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
+volumeRender.render_parameters[1] = { 'transp_type':'sigmoid', 'cmap_indx':3, 'transp_center':0, "transp_ramp": 2.5, 'density':0.03, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
+volumeRender.render_parameters[2] = { 'transp_type':'sigmoid', 'cmap_indx':4, 'transp_center':0.3, "transp_ramp": 3, 'density':0.01, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
 
 #Initialize openGL
-volumeRender.width_GL = 512*2
-volumeRender.height_GL = 512*2
+volumeRender.width_GL = int( 512*2.5 )
+volumeRender.height_GL = int( 512*2.5 )
 volumeRender.nTextures = nFields
 volumeRender.nWidth = nWidth
 volumeRender.nHeight = nHeight

@@ -1,13 +1,16 @@
 import numpy as np
 import h5py as h5
-from load_data_cholla import load_snapshot_data_particles
+from load_data_cholla import load_snapshot_data_particles, load_snapshot_data_grid
 
 
 
+global_data_parameters = {}
 
+parameters_dm_50Mpc = { 'transp_type':'sigmoid', 'cmap_indx':0, 'transp_center':0, "transp_ramp": 2.5, 'density':0.03, "brightness":2.0, 'transfer_offset': 0, 'transfer_scale': 1 }
 
 
 def get_data( nSnap, inDir, data_parameters, stats=None ):
+  global global_parameters
   format = data_parameters['data_format']
   type = data_parameters['data_type']
   field = data_parameters['data_field']
@@ -15,6 +18,16 @@ def get_data( nSnap, inDir, data_parameters, stats=None ):
   if format == 'cholla':
     if type == 'particles':
       data_cholla = load_snapshot_data_particles( nSnap, inDir )
+      if data_cholla.get('current_z') != None:
+        global_data_parameters['current_z'] = data_cholla['current_z']
+        global_data_parameters['current_z'] = data_cholla['current_z']
+        global_data_parameters['current_a'] = data_cholla['current_a']
+        data_dic['current_z'] = data_cholla['current_z']
+        data_dic['current_a'] = data_cholla['current_a']
+      data = data_cholla[field][...]
+      data_dic['data'] = data
+    if type == 'grid':
+      data_cholla = load_snapshot_data_grid( nSnap, inDir )
       data = data_cholla[field][...]
       data_dic['data'] = data
     if stats:
@@ -34,14 +47,15 @@ def get_data( nSnap, inDir, data_parameters, stats=None ):
       
 
 def get_Data_to_Render( nSnap, inDir, data_parameters, stats=True,  ):
-  data_dic = get_data( nSnap, inDir, data_parameters, stats=True )
+  data_dic = get_data( nSnap, inDir, data_parameters, stats=stats )
   data_to_render = data_dic['data']
-  stats_dic = data_dic['stats']
+  if stats: stats_dic = data_dic['stats']
+  else: stats_dic = None
   plotData = prepare_data( data_to_render, data_parameters, stats=stats_dic )
   return plotData
   
 
-def get_Data_for_Interpolation( nSnap, inDir, data_parameters,  data_for_interpolation=None ):
+def get_Data_for_Interpolation( nSnap, inDir, data_parameters, n_snapshots, data_for_interpolation=None,  ):
   if data_for_interpolation == None: 
     data_for_interpolation = {}
     nSnap_0 = nSnap
@@ -65,13 +79,17 @@ def get_Data_for_Interpolation( nSnap, inDir, data_parameters,  data_for_interpo
     data_for_interpolation['nSnap'] = nSnap_0
     print( " Swaping data snapshot: {0}".format(nSnap_0) )
     data_for_interpolation[0] = data_for_interpolation[1].copy()
-    print(" Lodading Snapshot: {0}").format(nSnap_1)
-    data_dic_1 = get_data( nSnap_1, inDir, data_parameters, stats=False )
-    data_1 = data_dic_1['data']
+    if nSnap_1 == n_snapshots:
+      print( "Exiting: Interpolation") 
+      data_1 = data_for_interpolation[0]
+    else:
+      print(" Lodading Snapshot: {0}").format(nSnap_1)
+      data_dic_1 = get_data( nSnap_1, inDir, data_parameters, stats=False )
+      data_1 = data_dic_1['data']
     data_for_interpolation[1] = data_1
   return data_for_interpolation
 
-def get_Data_List_to_Render_Interpolation( nSnap, inDir, nFields, current_frame, frames_per_snapshot, data_parameters, data_for_interpolation ):
+def get_Data_List_to_Render_Interpolation( nSnap, inDir, nFields, current_frame, frames_per_snapshot, data_parameters, data_for_interpolation, n_snapshots ):
   if data_for_interpolation == None:
     data_for_interpolation = {}
     for i in range(nFields):
@@ -80,7 +98,7 @@ def get_Data_List_to_Render_Interpolation( nSnap, inDir, nFields, current_frame,
   data_to_render_list = []
   for i in range( nFields ):
     if current_frame % frames_per_snapshot == 0:
-      data_for_interpolation[i] = get_Data_for_Interpolation( nSnap, inDir, data_parameters[i], data_for_interpolation=data_for_interpolation[i]  )
+      data_for_interpolation[i] = get_Data_for_Interpolation( nSnap, inDir, data_parameters[i], n_snapshots, data_for_interpolation=data_for_interpolation[i]  )
     stats = data_for_interpolation[i]['stats']
     data_interpolated = Interpolate_Data( current_frame, frames_per_snapshot, data_for_interpolation[i] )
     plotData = prepare_data( data_interpolated, data_parameters[0], stats=stats )
@@ -123,8 +141,9 @@ def prepare_data( plotData,  data_parameters, stats=None ):
   n_border = data_parameters['n_border']
   
   if normalize == 'local':
+    print plotData.max()
     if log : plotData = np.log10(plotData + 1)
-    plotData -= plotData.min()
+    # plotData -= plotData.min()
     norm_val = plotData.max()
     plotData /= norm_val
     
