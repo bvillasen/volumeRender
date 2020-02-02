@@ -8,7 +8,7 @@ import numpy as np
 
 
 def load_snapshot_data_grid( nSnap, inputDir ):
-  inFileName = 'grid_{0}.h5'.format(nSnap)
+  inFileName = 'grid_{0:03}.h5'.format(nSnap)
   snapFile = h5.File( inputDir + inFileName, 'r')
   t = snapFile.attrs['t']
   inputKeys = snapFile.keys()
@@ -27,7 +27,7 @@ def load_snapshot_data_grid( nSnap, inputDir ):
 # inputDir = dataDir + 'cholla_hydro/collapse_3D/'
 # nSnap = 0
 def load_snapshot_data_particles( nSnap, inputDir ):
-  inFileName = 'particles_{0}.h5'.format(nSnap)
+  inFileName = 'particles_{0:03}.h5'.format(nSnap)
   partsFile = h5.File( inputDir + inFileName, 'r')
   fields_data = partsFile.keys()
   current_a = partsFile.attrs['current_a']

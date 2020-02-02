@@ -9,11 +9,12 @@ sys.path.extend([  dataDirectory ] )
 from tools import *
 from load_data_cholla import load_snapshot_data_particles, load_snapshot_data_grid
 
-dataDir = '/home/bruno/Desktop/hard_drive_1/data/'
+# dataDir = '/home/bruno/Desktop/hard_drive_1/data/'
+dataDir = '/home/bruno/Desktop/ssd_0/'
 # dataDir = '/raid/bruno/data/'
 # inDir = dataDir + 'cosmo_sims/cholla_pm/256_cool_uv_50Mpc/data_PPMC_HLLC_SIMPLE_eta0.001_0.0400/'
-inDir = dataDir + 'cosmo_sims/cholla_pm/128_cool/data_float32/'
-enzoDir = inDir
+# inDir = dataDir + 'cosmo_sims/cholla_pm/128_cool/data_float32/'
+inDir = dataDir + 'cosmo_sims/1024_hydro_50Mpc/snapshots_pchw18/'
 outDir = inDir
 
 
@@ -23,7 +24,8 @@ outDir = inDir
 fields_grid = ['density', 'temperature']
 fields_particles = ['density']
 
-fileKeys = [ 'particles', 'grid']
+# fileKeys = [ 'particles', 'grid']
+fileKeys = ['particles']
 
 for fileKey in fileKeys:
 
@@ -48,9 +50,13 @@ for fileKey in fileKeys:
         stats[field]['min_vals'] = []
         stats[field]['max_vals'] = []
     for field in fields:
-      data = data_cholla[field][...]
-      stats[field]['min_vals'].append( data.min() )
-      stats[field]['max_vals'].append( data.max() )
+      # data = data_cholla[field][...]
+      # stats[field]['min_vals'].append( data.min() )
+      # stats[field]['max_vals'].append( data.max() )
+      data = data_cholla[field]
+      stats[field]['min_vals'].append( data.attrs['min'] )
+      stats[field]['max_vals'].append( data.attrs['max'] )
+      
   for field in fields:
     stats[field]['min_vals'] = np.array( stats[field]['min_vals'] )
     stats[field]['max_vals'] = np.array( stats[field]['max_vals'] )

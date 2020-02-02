@@ -485,10 +485,10 @@ def keyboard(*args):
     brightness += np.float32(0.01)
     print "Image Brightness : ",brightness
   if args[0] == '7':
-    density -= np.float32(0.01)
+    density -= np.float32(0.001)
     print "Image Density : ",density
   if args[0] == '8':
-    density += np.float32(0.01)
+    density += np.float32(0.001)
     print "Image Density : ",density
   if args[0] == '3':
     transferOffset += np.float32(0.01)

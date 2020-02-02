@@ -19,6 +19,8 @@ import matplotlib.pyplot as plt
 from PIL import Image
 from PIL import ImageOps
 
+from colormaps import get_color_data_from_colormap, availble_colormaps
+
 #Add Modules from other directories
 currentDirectory = os.getcwd()
 parentDirectory = currentDirectory[:currentDirectory.rfind("/")]
@@ -45,9 +47,44 @@ viewZmin, viewZmax = -10.5, 10.5
 
 plotData_list = []
 
+render_text = {} 
+
 
 width_GL = 512*2
 height_GL = 512*2
+
+def glut_print( x,  y,  font,  text, r,  g , b , a):
+
+  blending = False 
+  if glIsEnabled(GL_BLEND) :
+      blending = True
+
+  #glEnable(GL_BLEND)
+  glColor3f(1,1,1)
+  glRasterPos2f(x,y)
+  # glScalef(0.005,0.005,1);
+  # glutBitmapString(GLUT_BITMAP_TIMES_ROMAN_24, text)
+  # glutStrokeString(GLUT_STROKE_ROMAN, "The game over!");
+  for ch in text :
+      glutBitmapCharacter( font , ctypes.c_int( ord(ch) ) )
+      # glutStrokeCharacter(GLUT_STROKE_ROMAN ,  ctypes.c_int( ord(ch)) )
+
+  # glClear(GL_COLOR_BUFFER_BIT);
+  # glPushMatrix();
+  # glTranslatef(x, y, 0);
+  # glColor3f(1,1,1)
+  # # glScalef(2, 2, 1);
+  # # glScalef(0.09, -0.08, 1);
+  # # glRasterPos2f(x,y)
+  # 
+  # for ch in text:
+  #   glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN ,  ctypes.c_int( ord(ch)) )
+  # glPopMatrix();
+  
+  
+  
+  if not blending :
+      glDisable(GL_BLEND) 
 
 
 density = 0.05
@@ -56,10 +93,11 @@ transfer_offset = 0.0
 transfer_scale = 1.0
 
 
+color_first_index = 0
+color_second_index = 0
+changed_colormap = False
 
-colorMaps = [ 'inferno', 'plasma', 'magma', 'viridis', 'jet', 'nipy_spectral', 'CMRmap', 'bone', 'hot', 'copper']
-# colorMaps = plt.colormaps()
-
+colorMap = []
 
 render_parameters = {}
 
@@ -152,7 +190,7 @@ def render(  invViewMatrix_list ):
   for i in range(nTextures):
     parameters = render_parameters[i]
     transp_type = parameters['transp_type']
-    cmap_indx = parameters['cmap_indx']
+    # cmap_indx = parameters['cmap_indx']
     transp_center = parameters['transp_center']
     transp_ramp = parameters['transp_ramp']
     density = parameters['density']
@@ -160,7 +198,7 @@ def render(  invViewMatrix_list ):
     transferOffset = parameters['transfer_offset']
     transferScale = parameters['transfer_scale']
     plot_data = plotData_list[i]
-    set_transfer_function( transp_type, cmap_indx, transp_ramp, transp_center )
+    set_transfer_function( transp_type, i, transp_ramp, transp_center )
     cuda.memcpy_htod( c_invViewMatrix,  invViewMatrix_list[i])
     tex.set_array(plot_data)
 
@@ -262,6 +300,11 @@ def display():
     #Finish Image
     glEnd()
     glBindTexture(GL_TEXTURE_2D, 0)
+    
+    if render_text != {}:
+      text_x, text_y = render_text['x'], render_text['y']
+      text_str = render_text['text']
+      glut_print( text_x, text_y , GLUT_BITMAP_TIMES_ROMAN_24 , text_str , 1.0 , 1.0 , 1.0 , 1.0 )
   glutSwapBuffers();
   timer = time.time() - timer
   computeFPS()
@@ -322,13 +365,58 @@ def gaussian( x, center, ramp ):
 
 
 def set_transfer_function( transp_type, cmap_indx, transp_ramp, transp_center ):
+  global changed_colormap
   transp_center , transp_ramp = np.float32(transp_center), np.float32(transp_ramp)
-  colorMap = colorMaps[cmap_indx]
-  norm = cl.Normalize(vmin=0, vmax=1, clip=False)
-  cmap = cm.ScalarMappable( norm=norm, cmap=colorMap)
   nSamples = 256
-  colorVals = np.linspace(0,1,nSamples)
-  colorData = cmap.to_rgba(colorVals).astype(np.float32)
+  
+  if render_parameters[cmap_indx]['colormap'] == {}:
+  
+    colorMap_main_types = availble_colormaps.keys()
+    n_color_main = len( colorMap_main_types)
+    
+    colorMap_main = colorMap_main_types[color_first_index%n_color_main]
+    
+    colorMap_names = availble_colormaps[colorMap_main].keys()
+    n_color_names = len(colorMap_names)
+    
+    colorMap_name = colorMap_names[color_second_index%n_color_names]
+    colorMap_type = availble_colormaps[colorMap_main][colorMap_name]['color_type']
+    
+  else:
+    colorMap_main = render_parameters[cmap_indx]['colormap']['main']
+    colorMap_name = render_parameters[cmap_indx]['colormap']['name']
+    if colorMap_main == 'matplotlib': colorMap_type = None
+  
+
+  
+  colorData = get_color_data_from_colormap( colorMap_main, colorMap_name, nSamples, colorMap_type)
+  # 
+  
+  if changed_colormap: 
+    print " colorMap Type: {0}   name: {1}   type: {2}".format( colorMap_main, colorMap_name, colorMap_type)
+    changed_colormap = False
+  
+    
+  # colorMap = colorMaps[cmap_indx]
+  # norm = cl.Normalize(vmin=0, vmax=1, clip=False)
+  # cmap = cm.ScalarMappable( norm=norm, cmap=colorMap)
+  # colorVals = np.linspace(0,1,nSamples)
+  # colorData = cmap.to_rgba(colorVals).astype(np.float32)
+  # colorData = get_color_data_from_colormap( 'matplotlib', colorMap, nSamples)
+  # colorData = get_color_data_from_colormap( 'palettable', 'deep_r', nSamples, color_type='cmocean')
+  # colorData = get_color_data_from_colormap( 'palettable', 'dense_r', nSamples, color_type='cmocean')
+  # colorData = get_color_data_from_colormap( 'palettable', 'haline', nSamples, color_type='cmocean')
+  # colorData = get_color_data_from_colormap( 'palettable', 'matter_r', nSamples, color_type='cmocean')
+  # colorData = get_color_data_from_colormap( 'palettable', 'thermal', nSamples, color_type='cmocean')
+  
+  # colorData = get_color_data_from_colormap( 'palettable', 'davos', nSamples, color_type='scientific')
+  # colorData = get_color_data_from_colormap( 'palettable', 'devon', nSamples, color_type='scientific')
+  # colorData = get_color_data_from_colormap( 'palettable', 'imola', nSamples, color_type='scientific')
+  # colorData = get_color_data_from_colormap( 'palettable', 'lapaz', nSamples, color_type='scientific')
+  # colorData = get_color_data_from_colormap( 'palettable', 'nuuk', nSamples, color_type='scientific')
+  # colorData = get_color_data_from_colormap( 'palettable', 'oslo', nSamples, color_type='scientific')
+  
+  
   transp_vals = np.linspace(-1,1,nSamples)
   if transp_type=='sigmoid':transparency = sigmoid( transp_vals, transp_center, transp_ramp )**2
   if transp_type=='gaussian':transparency = gaussian( transp_vals, transp_center, transp_ramp )

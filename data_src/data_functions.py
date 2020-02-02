@@ -25,6 +25,7 @@ def get_data( nSnap, inDir, data_parameters, stats=None ):
         data_dic['current_z'] = data_cholla['current_z']
         data_dic['current_a'] = data_cholla['current_a']
       data = data_cholla[field][...]
+      # data = data_cholla[field][:128, :128, :128]
       data_dic['data'] = data
     if type == 'grid':
       data_cholla = load_snapshot_data_grid( nSnap, inDir )
@@ -71,6 +72,9 @@ def get_Data_for_Interpolation( nSnap, inDir, data_parameters, n_snapshots, data
     data_for_interpolation['nSnap'] = nSnap_0
     data_for_interpolation[0] = data_0
     data_for_interpolation[1] = data_1
+    data_for_interpolation['z'] = {}
+    data_for_interpolation['z'][0] = data_dic_0['current_z']
+    data_for_interpolation['z'][1] = data_dic_1['current_z']
   else:
     nSnap_prev = data_for_interpolation['nSnap']
     if nSnap - nSnap_prev != 1: print( 'ERROR: Interpolation snapshot sequence')
@@ -86,6 +90,9 @@ def get_Data_for_Interpolation( nSnap, inDir, data_parameters, n_snapshots, data
       print(" Lodading Snapshot: {0}").format(nSnap_1)
       data_dic_1 = get_data( nSnap_1, inDir, data_parameters, stats=False )
       data_1 = data_dic_1['data']
+      
+      data_for_interpolation['z'][0] = data_for_interpolation['z'][1]
+      data_for_interpolation['z'][1] = data_dic_1['current_z']
     data_for_interpolation[1] = data_1
   return data_for_interpolation
 
@@ -100,10 +107,10 @@ def get_Data_List_to_Render_Interpolation( nSnap, inDir, nFields, current_frame,
     if current_frame % frames_per_snapshot == 0:
       data_for_interpolation[i] = get_Data_for_Interpolation( nSnap, inDir, data_parameters[i], n_snapshots, data_for_interpolation=data_for_interpolation[i]  )
     stats = data_for_interpolation[i]['stats']
-    data_interpolated = Interpolate_Data( current_frame, frames_per_snapshot, data_for_interpolation[i] )
+    data_interpolated, z_interpolated = Interpolate_Data( current_frame, frames_per_snapshot, data_for_interpolation[i] )
     plotData = prepare_data( data_interpolated, data_parameters[0], stats=stats )
     data_to_render_list.append( plotData )
-  return data_to_render_list, data_for_interpolation
+  return data_to_render_list, data_for_interpolation, z_interpolated
 
 
 
@@ -111,11 +118,17 @@ def Interpolate_Data( current_frame, frames_per_snapshot, data_for_interpolation
   nSnap = data_for_interpolation['nSnap']
   data_0 = data_for_interpolation[0]
   data_1 = data_for_interpolation[1]
+  z_0 = data_for_interpolation['z'][0]
+  z_1 = data_for_interpolation['z'][1]
+  a_0 = 1. / (z_0 + 1)
+  a_1 = 1. / (z_1 + 1)
   alpha = float( current_frame % frames_per_snapshot ) / frames_per_snapshot
   print( ' Interpolating Snapshots  {0} -> {1}   alpha:{2}'.format( nSnap, nSnap+1, alpha) )
   if alpha >= 1: print('ERROR: Interpolation alpha >= 1')
   data_interpolated = data_0 + alpha * ( data_1 - data_0 )
-  return data_interpolated
+  a_interpolated = a_0 + alpha * ( a_1 - a_0 )
+  z_interpolated = 1./a_interpolated - 1
+  return data_interpolated, z_interpolated
   
 def set_frame( data, n ):
   val = 1.0

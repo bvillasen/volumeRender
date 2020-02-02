@@ -18,26 +18,31 @@ import volumeRender_new as volumeRender
 from cudaTools import setCudaDevice, getFreeMemory, gpuArray3DtocudaArray, np3DtoCudaArray
 from render_functions import *
 from data_functions import *
+from tools import create_directory
 
-dataDir = '/home/bruno/Desktop/hard_drive_1/data/'
+# dataDir = '/home/bruno/Desktop/hard_drive_1/data/'
+dataDir = '/home/bruno/Desktop/ssd_0/data/'
 # inDir = dataDir + 'cosmo_sims/cholla_pm/256_dm_50Mpc/data/'
-inDir = dataDir + 'cosmo_sims/cholla_pm/128_cool/data_float32/'
-outDir = 'image_output/'
+# inDir = dataDir + 'cosmo_sims/cholla_pm/128_cool/data_float32/'
+inDir = dataDir + 'cosmo_sims/1024_hydro_50Mpc/snapshots_pchw18/'
+# outDir = 'image_output/'
+outDir = inDir + 'render_dm/'
+create_directory( outDir )
 
 #Select CUDA Device
 useDevice = 0
 
-nFields = 3
+nFields = 1
 
 interpolation = True
 data_for_interpolation = None
 
 save_images = True
 
-n_snapshots = 109
+n_snapshots = 200
 snapshots = range(0, n_snapshots, 1) 
 
-n_frames = n_snapshots*1
+n_frames = n_snapshots*10
 frames_per_snapshot = n_frames / n_snapshots
 
 rotation_angle = 0
@@ -55,7 +60,7 @@ data_type = 'particles'
 data_field = 'density'
 normalization = 'global'
 log_data = True
-n_border = 1
+n_border = 3
 
 data_parameters_default = { 'data_format': data_format, 'normalization':normalization, 'log_data':log_data, 'n_border':n_border }
 
@@ -72,18 +77,25 @@ data_parameters[2] = data_parameters_default.copy()
 data_parameters[2]['data_type'] = 'grid'
 data_parameters[2]['data_field'] = 'temperature'
 
+volumeRender.render_text['x'] = -0.45
+volumeRender.render_text['y'] =  0.45
+
 
 
 #Initial Snapshot
 nSnap = 0
 
 if interpolation:
-  data_to_render_list, data_for_interpolation = get_Data_List_to_Render_Interpolation( nSnap, inDir, nFields, current_frame, frames_per_snapshot, data_parameters,  data_for_interpolation, n_snapshots )
+  data_to_render_list, data_for_interpolation, current_z = get_Data_List_to_Render_Interpolation( nSnap, inDir, nFields, current_frame, frames_per_snapshot, data_parameters,  data_for_interpolation, n_snapshots )
 
  
 else:
   data_to_render_list = [ get_Data_to_Render( nSnap, inDir, data_parameters[i], stats=True ) for i in range(nFields)]
 
+
+volumeRender.render_text['x'] = -0.45
+volumeRender.render_text['y'] =  0.45
+volumeRender.render_text['text'] = 'z = {0:.2f}'.format(current_z)
 
 
 #Get Dimensions of the data to render
@@ -91,15 +103,19 @@ nz, ny, nx = data_to_render_list[0].shape
 nWidth, nHeight, nDepth = nx, ny, nz
 
 #Set the parameters for rendering each field
-volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'cmap_indx':0, 'transp_center':0, "transp_ramp": 3, 'density':0.03, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
-volumeRender.render_parameters[1] = { 'transp_type':'sigmoid', 'cmap_indx':3, 'transp_center':0, "transp_ramp": 2.5, 'density':0.03, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
-volumeRender.render_parameters[2] = { 'transp_type':'sigmoid', 'cmap_indx':4, 'transp_center':0.0, "transp_ramp": 3, 'density':0.01, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
+volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':0, "transp_ramp": 3, 'density':0.03, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
+volumeRender.render_parameters[1] = { 'transp_type':'sigmoid',  'transp_center':0, "transp_ramp": 2.5, 'density':0.03, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
+volumeRender.render_parameters[2] = { 'transp_type':'sigmoid',  'transp_center':0.3, "transp_ramp": 3, 'density':0.01, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
+
+volumeRender.render_parameters[0]['colormap']['main'] = 'matplotlib'
+volumeRender.render_parameters[0]['colormap']['name'] = 'CMRmap'
+
 
 
 
 #Initialize openGL
-volumeRender.width_GL = 512*2
-volumeRender.height_GL = 512*2
+volumeRender.width_GL = 512*4
+volumeRender.height_GL = 512*4
 volumeRender.nTextures = nFields
 volumeRender.nWidth = nWidth
 volumeRender.nHeight = nHeight
@@ -142,7 +158,8 @@ def stepFunction():
     if nSnap == n_snapshots-1:
       print( "Exiting")
       exit_program = True
-    data_to_render_list, data_for_interpolation = get_Data_List_to_Render_Interpolation( nSnap, inDir, nFields, current_frame, frames_per_snapshot, data_parameters, data_for_interpolation, n_snapshots )
+    data_to_render_list, data_for_interpolation, current_z = get_Data_List_to_Render_Interpolation( nSnap, inDir, nFields, current_frame, frames_per_snapshot, data_parameters, data_for_interpolation, n_snapshots )
+    volumeRender.render_text['text'] = 'z = {0:.2f}'.format(current_z)
     volumeRender.Change_Data_to_Render( nFields, data_to_render_list, copyToScreen_list )
   else:
     current_frame += 1
