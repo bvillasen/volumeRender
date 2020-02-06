@@ -24,7 +24,7 @@ from tools import create_directory
 dataDir = '/home/bruno/Desktop/ssd_0/data/'
 # inDir = dataDir + 'cosmo_sims/cholla_pm/256_dm_50Mpc/data/'
 # inDir = dataDir + 'cosmo_sims/cholla_pm/128_cool/data_float32/'
-inDir = dataDir + 'cosmo_sims/1024_hydro_50Mpc/snapshots_pchw18/'
+inDir = dataDir + 'cosmo_sims/1024_hydro_50Mpc/snapshots_pchw18/particles_density/'
 # outDir = 'image_output/'
 outDir = inDir + 'render_dm/'
 create_directory( outDir )
@@ -46,7 +46,7 @@ n_frames = n_snapshots*10
 frames_per_snapshot = n_frames / n_snapshots
 
 rotation_angle = 0
-total_rotation = 360
+total_rotation = 180.
 delta_rotation = float(total_rotation) / (n_frames-2)
 
 
@@ -69,9 +69,9 @@ data_parameters[0] = data_parameters_default.copy()
 data_parameters[0]['data_type'] = 'particles'
 data_parameters[0]['data_field'] = 'density'
 
-data_parameters[1] = data_parameters_default.copy()
-data_parameters[1]['data_type'] = 'grid'
-data_parameters[1]['data_field'] = 'density'
+# data_parameters[0] = data_parameters_default.copy()
+# data_parameters[0]['data_type'] = 'grid'
+# data_parameters[0]['data_field'] = 'density'
 
 data_parameters[2] = data_parameters_default.copy()
 data_parameters[2]['data_type'] = 'grid'
@@ -103,12 +103,23 @@ nz, ny, nx = data_to_render_list[0].shape
 nWidth, nHeight, nDepth = nx, ny, nz
 
 #Set the parameters for rendering each field
-volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':0, "transp_ramp": 3, 'density':0.03, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
-volumeRender.render_parameters[1] = { 'transp_type':'sigmoid',  'transp_center':0, "transp_ramp": 2.5, 'density':0.03, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
-volumeRender.render_parameters[2] = { 'transp_type':'sigmoid',  'transp_center':0.3, "transp_ramp": 3, 'density':0.01, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
+# volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':0, "transp_ramp": 3, 'density':0.03, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
+volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':0.46, "transp_ramp": 2.0, 'density':0.089, "brightness":2.0, 'transfer_offset': 0, 'transfer_scale': 1.0 }
+# volumeRender.render_parameters[1] = { 'transp_type':'sigmoid',  'transp_center':0, "transp_ramp": 0, 'density':0.03, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
+# volumeRender.render_parameters[2] = { 'transp_type':'sigmoid',  'transp_center':0.3, "transp_ramp": 3, 'density':0.01, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
 
 volumeRender.render_parameters[0]['colormap']['main'] = 'matplotlib'
 volumeRender.render_parameters[0]['colormap']['name'] = 'CMRmap'
+
+#Set the parameters for rendering each field
+# volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':0, "transp_ramp": 3, 'density':0.03, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
+# volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':-0.13, "transp_ramp": 2.25, 'density':0.03, "brightness":2.0, 'transfer_offset': 0.049, 'transfer_scale': 1.88 }
+# # volumeRender.render_parameters[2] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':0.3, "transp_ramp": 3, 'density':0.01, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
+# 
+# volumeRender.render_parameters[0]['colormap']['main'] = 'palettable'
+# volumeRender.render_parameters[0]['colormap']['name'] = 'haline'
+# volumeRender.render_parameters[0]['colormap']['type'] = 'cmocean'
+
 
 
 
@@ -145,9 +156,10 @@ def sendToScreen( ):
 
 exit_program = False
 def stepFunction():
-  global exit_program, nSnap, current_frame, rotation_angle, data_for_interpolation, send_data, data_to_render_list, copyToScreen_list
+  global exit_program, nSnap, current_frame, rotation_angle, data_for_interpolation, send_data, data_to_render_list, copyToScreen_list, current_z
   sendToScreen( )
-  if current_frame > 0 and save_images : volumeRender.save_image(dir=outDir, image_name='image')
+  # print nSnap
+  if current_frame > 0 and save_images: volumeRender.save_image(dir=outDir, image_name='image')
   if current_frame > 0: rotation_angle += delta_rotation
   volumeRender.Change_Rotation_Angle( rotation_angle )
   if interpolation:
@@ -155,7 +167,7 @@ def stepFunction():
       print "Finished Animation" 
       exit()
     current_frame, nSnap = volumeRender.Update_Frame_Number( nSnap, current_frame, frames_per_snapshot )
-    if nSnap == n_snapshots-1:
+    if nSnap == n_snapshots-1 and current_frame%frames_per_snapshot == frames_per_snapshot-1:
       print( "Exiting")
       exit_program = True
     data_to_render_list, data_for_interpolation, current_z = get_Data_List_to_Render_Interpolation( nSnap, inDir, nFields, current_frame, frames_per_snapshot, data_parameters, data_for_interpolation, n_snapshots )

@@ -17,10 +17,16 @@ def load_snapshot_data_grid( nSnap, inputDir ):
   grid_keys = snapFile.keys()
   data_grid = {}
   data_grid['t'] = t
+  current_a = snapFile.attrs['Current_a']
+  current_z = snapFile.attrs['Current_z']
+  data_grid['current_a'] = current_a
+  data_grid['current_z'] = current_z
   # for key in optional_keys:
   #   if key in inputKeys: grid_keys.append( key )
   for key in grid_keys:
     data_grid[key] = snapFile[key]
+    data_grid['min_'+key] = snapFile.attrs['min_'+key]
+    data_grid['max_'+key] = snapFile.attrs['max_'+key]
   return data_grid
 
 # dataDir = '/home/bruno/Desktop/data/'

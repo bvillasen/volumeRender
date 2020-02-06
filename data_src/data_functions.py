@@ -24,13 +24,19 @@ def get_data( nSnap, inDir, data_parameters, stats=None ):
         global_data_parameters['current_a'] = data_cholla['current_a']
         data_dic['current_z'] = data_cholla['current_z']
         data_dic['current_a'] = data_cholla['current_a']
+        # data = data_cholla[field][:128, :128, :128]
       data = data_cholla[field][...]
-      # data = data_cholla[field][:128, :128, :128]
       data_dic['data'] = data
     if type == 'grid':
       data_cholla = load_snapshot_data_grid( nSnap, inDir )
       data = data_cholla[field][...]
       data_dic['data'] = data
+      if data_cholla.get('current_z') != None:
+        global_data_parameters['current_z'] = data_cholla['current_z']
+        global_data_parameters['current_z'] = data_cholla['current_z']
+        global_data_parameters['current_a'] = data_cholla['current_a']
+        data_dic['current_z'] = data_cholla['current_z']
+        data_dic['current_a'] = data_cholla['current_a']
     if stats:
       stats_file = h5.File( inDir + 'stats_{0}.h5'.format(type), 'r')
       stats_field = stats_file[field]

@@ -386,7 +386,8 @@ def set_transfer_function( transp_type, cmap_indx, transp_ramp, transp_center ):
     colorMap_main = render_parameters[cmap_indx]['colormap']['main']
     colorMap_name = render_parameters[cmap_indx]['colormap']['name']
     if colorMap_main == 'matplotlib': colorMap_type = None
-  
+    else: colorMap_type = render_parameters[cmap_indx]['colormap']['type']
+    
 
   
   colorData = get_color_data_from_colormap( colorMap_main, colorMap_name, nSamples, colorMap_type)
