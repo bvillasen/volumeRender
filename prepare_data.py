@@ -37,9 +37,13 @@ field = 'density'
 data_vals = data[data_type][field]  
 
 
+# Normalize Data
 max_val = data_vals.max() / 10
 min_val = data_vals.min()
-
 data_vals = np.clip( data_vals, a_min=min_val, a_max=max_val ) 
 data_vals = ( data_vals - min_val ) / ( max_val - min_val )
+
+# Change to 256 range
+data_vals = (255*(data_vals)).astype(np.uint8)
+
 
