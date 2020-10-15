@@ -5,7 +5,7 @@ import numpy as np
 
 
 def create_directory( dir ):
-  print "Creating Directory: ", dir
+  print( "Creating Directory: " + dir )
   indx = dir[:-1].rfind('/' )
   inDir = dir[:indx]
   dirName = dir[indx:].replace('/','')
