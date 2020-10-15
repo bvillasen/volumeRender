@@ -10,7 +10,7 @@ def create_directory( dir ):
   inDir = dir[:indx]
   dirName = dir[indx:].replace('/','')
   dir_list = next(os.walk(inDir))[1]
-  if dirName in dir_list: print " Directory exists"
+  if dirName in dir_list: print( " Directory exists" )
   else:
     os.mkdir( dir )
     print " Directory created"
