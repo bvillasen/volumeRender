@@ -9,6 +9,9 @@ global_data_parameters = {}
 parameters_dm_50Mpc = { 'transp_type':'sigmoid', 'cmap_indx':0, 'transp_center':0, "transp_ramp": 2.5, 'density':0.03, "brightness":2.0, 'transfer_offset': 0, 'transfer_scale': 1 }
 
 
+def load_prepared_data( nSnap, inDir, data_parameters ):
+  return None
+
 def get_data( nSnap, inDir, data_parameters, stats=None ):
   global global_parameters
   format = data_parameters['data_format']
@@ -58,12 +61,15 @@ def get_data( nSnap, inDir, data_parameters, stats=None ):
   return data_dic
       
 
-def get_Data_to_Render( nSnap, inDir, data_parameters, stats=True,  ):
-  data_dic = get_data( nSnap, inDir, data_parameters, stats=stats )
-  data_to_render = data_dic['data']
-  if stats: stats_dic = data_dic['stats']
-  else: stats_dic = None
-  plotData = prepare_data( data_to_render, data_parameters, stats=stats_dic )
+def get_Data_to_Render( nSnap, inDir, data_parameters, stats=True, data_prepared=False  ):
+  if not data_prepared:
+    data_dic = get_data( nSnap, inDir, data_parameters, stats=stats )
+    data_to_render = data_dic['data']
+    if stats: stats_dic = data_dic['stats']
+    else: stats_dic = None
+    plotData = prepare_data( data_to_render, data_parameters, stats=stats_dic )
+  else:
+    plotData = load_prepared_data( nSnap, inDir, data_parameters )
   return plotData
   
 
