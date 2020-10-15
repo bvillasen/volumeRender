@@ -14,7 +14,8 @@ from load_data_cholla_distributed import load_snapshot_data_distributed
 # dataDir = '/raid/bruno/data/'
 dataDir = '/data/groups/comp-astro/bruno/'
 inDir = dataDir + 'cosmo_sims/1024_hydro_50Mpc/output_files_pchw18/'
-
+outDir = dataDir + 'cosmo_sims/1024_hydro_50Mpc/snapshots_prepared/'
+create_directory( outDir )
 
 n_snapshot = 169
 
@@ -46,4 +47,9 @@ data_vals = ( data_vals - min_val ) / ( max_val - min_val )
 # Change to 256 range
 data_vals = (255*(data_vals)).astype(np.uint8)
 
+#Write to file
+out_file_name = outDir + 'snapshot_{0}.h5'.format( nSnap )
+out_file = h5.File( out_file_name, 'w')
 
+out_file.close()
+print( "Saved File: " + out_file_name )
