@@ -2,6 +2,12 @@ import os, sys
 import numpy as np
 import h5py as h5
 
+currentDirectory = os.getcwd()
+srcDirectory = currentDirectory + "/src/"
+dataDirectory = currentDirectory + "/data_src/"
+sys.path.extend([ srcDirectory, dataDirectory ] )
+from tools import create_directory
+from load_data_cholla_distributed import load_snapshot_data_distributed
 
 #Load Snapshot Data
 
