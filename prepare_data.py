@@ -36,7 +36,7 @@ data = load_snapshot_data_distributed( n_snapshot, inDir, data_type, fields, sub
 field = 'density'
 
 data_vals = data[data_type][field]  
-data_vals = np.log10(data_vals)
+data_vals = np.log10(data_vals + 1)
 data_vals -= data_vals.min()
 
 # Normalize Data
