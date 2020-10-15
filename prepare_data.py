@@ -13,8 +13,8 @@ from load_data_cholla_distributed import load_snapshot_data_distributed
 
 # dataDir = '/raid/bruno/data/'
 dataDir = '/data/groups/comp-astro/bruno/'
-inDir = dataDir + 'cosmo_sims/1024_hydro_50Mpc/output_files_pchw18/'
-outDir = dataDir + 'cosmo_sims/1024_hydro_50Mpc/snapshots_prepared/'
+inDir = dataDir + 'cosmo_sims/2048_hydro_50Mpc/output_files_pchw18/'
+outDir = dataDir + 'cosmo_sims/2048_hydro_50Mpc/snapshots_prepared/'
 create_directory( outDir )
 
 n_snapshot = 169
@@ -27,10 +27,12 @@ fields = ['density']
 precision = np.float32
 
 Lbox = 5000    #kpc/h
-proc_grid = [ 4, 2, 2]
+nPoints = 2048
+# proc_grid = [ 4, 2, 2]
+proc_grid = [ 8, 8, 8]
 box_size = [ Lbox, Lbox, Lbox ]
-grid_size = [ 1024, 1024, 1024 ] #Size of the simulation grid
-subgrid = [ [0, 1024], [0, 1024], [0, 1024] ] #Size of the volume to load
+grid_size = [ nPoints, nPoints, nPoints ] #Size of the simulation grid
+subgrid = [ [0, nPoints], [0, nPoints], [0, nPoints] ] #Size of the volume to load
 data = load_snapshot_data_distributed( n_snapshot, inDir, data_type, fields, subgrid,  precision, proc_grid,  box_size, grid_size, show_progess=True )
 
 field = 'density'
