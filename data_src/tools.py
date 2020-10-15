@@ -13,7 +13,7 @@ def create_directory( dir ):
   if dirName in dir_list: print( " Directory exists" )
   else:
     os.mkdir( dir )
-    print " Directory created"
+    print( " Directory created" )
 
 def get_files_names( fileKey, inDir, type='cholla' ):
   if type=='nyx': dataFiles = [f for f in listdir(inDir) if (f.find(fileKey) >= 0 )  ]
