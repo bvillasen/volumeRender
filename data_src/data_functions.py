@@ -10,7 +10,13 @@ parameters_dm_50Mpc = { 'transp_type':'sigmoid', 'cmap_indx':0, 'transp_center':
 
 
 def load_prepared_data( nSnap, inDir, data_parameters ):
-  return None
+  format = data_parameters['data_format']
+  type = data_parameters['data_type']
+  field = data_parameters['data_field']
+  inFileName = inDir + '{0}_{1}_{2}.h5'.format( type, field, nSnap )
+  inFile = h5.File( inFileName, 'r')
+  data = inFile[field][...]
+  return data
 
 def get_data( nSnap, inDir, data_parameters, stats=None ):
   global global_parameters
@@ -29,7 +35,7 @@ def get_data( nSnap, inDir, data_parameters, stats=None ):
         data_dic['current_a'] = data_cholla['current_a']
       # data = data_cholla[field][...]
       data_dic['data'] = data
-    if type == 'grid':
+    if type == 'hydro':
       data_cholla = load_snapshot_data_grid( nSnap, inDir )
       data = data_cholla[field][...]
       # #Add Global min:
