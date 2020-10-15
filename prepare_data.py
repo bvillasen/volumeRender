@@ -41,4 +41,5 @@ max_val = data_vals.max() / 10
 min_val = data_vals.min()
 
 data_vals = np.clip( data_vals, a_min=min_val, a_max=max_val ) 
+data_vals = ( data_vals - min_val ) / ( max_val - min_val )
 
