@@ -24,9 +24,9 @@ from tools import create_directory
 dataDir = '/home/bruno/Desktop/ssd_0/data/'
 # inDir = dataDir + 'cosmo_sims/cholla_pm/256_dm_50Mpc/data/'
 # inDir = dataDir + 'cosmo_sims/cholla_pm/128_cool/data_float32/'
-inDir = dataDir + 'cosmo_sims/1024_hydro_50Mpc/snapshots_pchw18/particles_density/'
+inDir = dataDir + 'cosmo_sims/1024_hydro_50Mpc/snapshots_pchw18/hydro_temperature/'
 # outDir = 'image_output/'
-outDir = inDir + 'render_dm/'
+outDir = inDir + 'render_temperature/'
 create_directory( outDir )
 
 #Select CUDA Device
@@ -65,17 +65,17 @@ n_border = 3
 data_parameters_default = { 'data_format': data_format, 'normalization':normalization, 'log_data':log_data, 'n_border':n_border }
 
 data_parameters = {}
-data_parameters[0] = data_parameters_default.copy()
-data_parameters[0]['data_type'] = 'particles'
-data_parameters[0]['data_field'] = 'density'
+# data_parameters[0] = data_parameters_default.copy()
+# data_parameters[0]['data_type'] = 'particles'
+# data_parameters[0]['data_field'] = 'density'
 
 # data_parameters[0] = data_parameters_default.copy()
 # data_parameters[0]['data_type'] = 'grid'
 # data_parameters[0]['data_field'] = 'density'
 
-data_parameters[2] = data_parameters_default.copy()
-data_parameters[2]['data_type'] = 'grid'
-data_parameters[2]['data_field'] = 'temperature'
+data_parameters[0] = data_parameters_default.copy()
+data_parameters[0]['data_type'] = 'grid'
+data_parameters[0]['data_field'] = 'temperature'
 
 volumeRender.render_text['x'] = -0.45
 volumeRender.render_text['y'] =  0.45
@@ -84,6 +84,12 @@ volumeRender.render_text['y'] =  0.45
 
 #Initial Snapshot
 nSnap = 0
+
+#Restart
+# nSnap = 186
+# current_frame = nSnap * frames_per_snapshot
+# volumeRender.n_image = current_frame - 1
+# rotation_angle = (current_frame - 1) * delta_rotation
 
 if interpolation:
   data_to_render_list, data_for_interpolation, current_z = get_Data_List_to_Render_Interpolation( nSnap, inDir, nFields, current_frame, frames_per_snapshot, data_parameters,  data_for_interpolation, n_snapshots )
@@ -103,24 +109,21 @@ nz, ny, nx = data_to_render_list[0].shape
 nWidth, nHeight, nDepth = nx, ny, nz
 
 #Set the parameters for rendering each field
-# volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':0, "transp_ramp": 3, 'density':0.03, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
-volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':0.46, "transp_ramp": 2.0, 'density':0.089, "brightness":2.0, 'transfer_offset': 0, 'transfer_scale': 1.0 }
-# volumeRender.render_parameters[1] = { 'transp_type':'sigmoid',  'transp_center':0, "transp_ramp": 0, 'density':0.03, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
-# volumeRender.render_parameters[2] = { 'transp_type':'sigmoid',  'transp_center':0.3, "transp_ramp": 3, 'density':0.01, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
-
-volumeRender.render_parameters[0]['colormap']['main'] = 'matplotlib'
-volumeRender.render_parameters[0]['colormap']['name'] = 'CMRmap'
-
-#Set the parameters for rendering each field
-# volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':0, "transp_ramp": 3, 'density':0.03, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
-# volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':-0.13, "transp_ramp": 2.25, 'density':0.03, "brightness":2.0, 'transfer_offset': 0.049, 'transfer_scale': 1.88 }
-# # volumeRender.render_parameters[2] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':0.3, "transp_ramp": 3, 'density':0.01, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
+# # DM Density
+# volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':0.46, "transp_ramp": 2.0, 'density':0.089, "brightness":2.0, 'transfer_offset': 0, 'transfer_scale': 1.0 }
+# volumeRender.render_parameters[0]['colormap']['main'] = 'matplotlib'
+# volumeRender.render_parameters[0]['colormap']['name'] = 'CMRmap'
 # 
+# # Gas Density
+# volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':-0.13, "transp_ramp": 2.25, 'density':0.03, "brightness":2.0, 'transfer_offset': 0.049, 'transfer_scale': 1.88 }
 # volumeRender.render_parameters[0]['colormap']['main'] = 'palettable'
 # volumeRender.render_parameters[0]['colormap']['name'] = 'haline'
 # volumeRender.render_parameters[0]['colormap']['type'] = 'cmocean'
 
-
+# Gas Temperature
+volumeRender.render_parameters[0] = { 'transp_type':'sigmoid',  'colormap':{}, 'transp_center':0.3, "transp_ramp": 3, 'density':0.01, "brightness":2.0, 'transfer_offset':0.06 , 'transfer_scale': 1.15 }
+volumeRender.render_parameters[0]['colormap']['main'] = 'matplotlib'
+volumeRender.render_parameters[0]['colormap']['name'] = 'jet'
 
 
 
@@ -157,6 +160,7 @@ def sendToScreen( ):
 exit_program = False
 def stepFunction():
   global exit_program, nSnap, current_frame, rotation_angle, data_for_interpolation, send_data, data_to_render_list, copyToScreen_list, current_z
+  
   sendToScreen( )
   # print nSnap
   if current_frame > 0 and save_images: volumeRender.save_image(dir=outDir, image_name='image')
@@ -172,6 +176,8 @@ def stepFunction():
       exit_program = True
     data_to_render_list, data_for_interpolation, current_z = get_Data_List_to_Render_Interpolation( nSnap, inDir, nFields, current_frame, frames_per_snapshot, data_parameters, data_for_interpolation, n_snapshots )
     volumeRender.render_text['text'] = 'z = {0:.2f}'.format(current_z)
+    volumeRender.render_parameters[0]['transp_center'] = volumeRender.set_transparency_center( nSnap, current_z)
+    print "Transparency center = {0}".format(volumeRender.render_parameters[0]['transp_center'])
     volumeRender.Change_Data_to_Render( nFields, data_to_render_list, copyToScreen_list )
   else:
     current_frame += 1

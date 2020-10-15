@@ -26,26 +26,37 @@ dataDir = '/home/bruno/Desktop/ssd_0/data/'
 # inDir = dataDir + 'cosmo_sims/cholla_pm/256_cool_uv_50Mpc/data_PPMC_HLLC_SIMPLE_eta0.001_0.0400/'
 # inDir = dataDir + 'cosmo_sims/cholla_pm/sphere_explosion/data_ppmp/'
 # inDir = dataDir + 'cosmo_sims/cholla_pm/256_dm_50Mpc/data/'
-inDir = dataDir + 'cosmo_sims/1024_hydro_50Mpc/snapshots_pchw18/particles_density/'
+inDir = dataDir + 'cosmo_sims/1024_hydro_50Mpc/snapshots_pchw18/hydro_density/'
+outDir = '/home/bruno/Desktop/cosmo_gas/'
+
+a_vals = np.loadtxt( 'outputs_cosmo_aLin_200.txt')
+z_vals = 1./a_vals - 1
+
+
 
 #Select CUDA Device
 useDevice = 0
 
-nSnap = 199
+nSnap = 67
 
 nFields = 1
 
+n_image = 0
+
 
 load_stats = False
+
+rotation_angle = 60
 
 
 
 data_format = 'cholla'
 data_type = 'particles'
 data_field = 'density'
-normalization = 'global'
+# normalization = 'global'
+normalization = 'local'
 log_data = True
-n_border = 4
+n_border = 2
 
 if normalization == 'global': load_stats = True
 
@@ -53,21 +64,21 @@ data_parameters_default = { 'data_format': data_format, 'normalization':normaliz
 
 data_parameters = {}
 
+# data_parameters[0] = data_parameters_default.copy()
+# data_parameters[0]['data_type'] = 'particles'
+# data_parameters[0]['data_field'] = 'density'
+
 data_parameters[0] = data_parameters_default.copy()
-data_parameters[0]['data_type'] = 'particles'
+data_parameters[0]['data_type'] = 'grid'
 data_parameters[0]['data_field'] = 'density'
 
 # data_parameters[0] = data_parameters_default.copy()
 # data_parameters[0]['data_type'] = 'grid'
-# data_parameters[0]['data_field'] = 'density'
-
-data_parameters[2] = data_parameters_default.copy()
-data_parameters[2]['data_type'] = 'grid'
-data_parameters[2]['data_field'] = 'temperature'
+# data_parameters[0]['data_field'] = 'temperature'
 
 volumeRender.render_text['x'] = -0.45
 volumeRender.render_text['y'] = 0.45
-volumeRender.render_text['text'] = "Cosmo Sim"
+volumeRender.render_text['text'] = ''
 
 
 
@@ -81,17 +92,21 @@ nz, ny, nx = data_to_render_list[0].shape
 nWidth, nHeight, nDepth = nx, ny, nz
 
 #Set the parameters for rendering each field
-volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':0.46, "transp_ramp": 2.0, 'density':0.089, "brightness":2.0, 'transfer_offset': 0, 'transfer_scale': 1.0 }
-# volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':-0.13, "transp_ramp": 2.25, 'density':0.03, "brightness":2.0, 'transfer_offset': 0.049, 'transfer_scale': 1.88 }
-# # volumeRender.render_parameters[2] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':0.3, "transp_ramp": 3, 'density':0.01, "brightness":2.0, 'transfer_offset': volumeRender.transfer_offset, 'transfer_scale': volumeRender.transfer_scale }
+# # DM Density
+# volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':0.46, "transp_ramp": 2.0, 'density':0.089, "brightness":2.0, 'transfer_offset': 0, 'transfer_scale': 1.0 }
+# volumeRender.render_parameters[0]['colormap']['main'] = 'matplotlib'
+# volumeRender.render_parameters[0]['colormap']['name'] = 'CMRmap'
 # 
+# # Gas Density
+volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':-0.13, "transp_ramp": 2.25, 'density':0.03, "brightness":2.0, 'transfer_offset': 0.049, 'transfer_scale': 1.88 }
+volumeRender.render_parameters[0]['colormap']['main'] = 'palettable'
+volumeRender.render_parameters[0]['colormap']['name'] = 'haline'
+volumeRender.render_parameters[0]['colormap']['type'] = 'cmocean'
 
-volumeRender.render_parameters[0]['colormap']['main'] = 'matplotlib'
-volumeRender.render_parameters[0]['colormap']['name'] = 'CMRmap'
-# volumeRender.render_parameters[0]['colormap']['main'] = 'palettable'
-# volumeRender.render_parameters[0]['colormap']['name'] = 'haline'
-# volumeRender.render_parameters[0]['colormap']['type'] = 'cmocean'
-
+# # Gas Temperature
+# volumeRender.render_parameters[0] = { 'transp_type':'sigmoid',  'colormap':{}, 'transp_center':0.3, "transp_ramp": 3., 'density':0.01, "brightness":2.0, 'transfer_offset':0.06 , 'transfer_scale': 1.15 }
+# volumeRender.render_parameters[0]['colormap']['main'] = 'matplotlib'
+# volumeRender.render_parameters[0]['colormap']['name'] = 'jet'
 
 #Initialize openGL
 volumeRender.width_GL = int( 512*4 )
@@ -125,6 +140,10 @@ def sendToScreen( ):
 
 def stepFunction():
   global  nSnap
+  z = z_vals[nSnap]
+  # volumeRender.render_parameters[0]['transp_center'] = volumeRender.set_transparency_center( nSnap, z)
+  # print "Transparency center = {0}".format(volumeRender.render_parameters[0]['transp_center'])
+  volumeRender.Change_Rotation_Angle( rotation_angle )
   sendToScreen( )
 
 ########################################################################
@@ -148,14 +167,19 @@ def specialKeyboardFunc( key, x, y ):
   #   if nSnap == nSnapshots: nSnap = 0
   #   print " Snapshot: ", nSnap
   #   change_snapshot( nSnap )
-  
+
 def keyboard(*args):
   ESCAPE = '\033'
+  SPACE = '32'
   # If escape is pressed, kill everything.
   if args[0] == ESCAPE:
     print "Ending Simulation"
     #cuda.gl.Context.pop()
-    sys.exit()
+    sys.exit()  
+  if args[0] == 'z':
+      print "Saving Image: {0}".format( volumeRender.n_image)
+      volumeRender.save_image(dir=outDir, image_name='image')
+      
   if args[0] == 'q':
     volumeRender.render_parameters[0]['transp_center'] -= np.float32(0.01)
     print "Image Transp Center: ",volumeRender.render_parameters[0]['transp_center']
@@ -193,7 +217,7 @@ def keyboard(*args):
     volumeRender.render_parameters[0]['transfer_scale'] += np.float32(0.01)
     print "Image transfer_scale: ",volumeRender.render_parameters[0]['transfer_scale']
 
-  
+
   # if args[0] == '2':
   #   transferScale -= np.float32(0.01)
   #   print "Image Transfer Scale: ",transferScale

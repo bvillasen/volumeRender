@@ -1,0 +1,19 @@
+{
+  "logger": {
+    "title": "Remote Sync"
+  },
+  "uploadOnSave": true,
+  "useAtomicWrites": false,
+  "deleteLocal": false,
+  "hostname": "lux.ucsc.edu",
+  "port": "22",
+  "target": "volumeRender",
+  "ignore": [
+    ".remote-sync.json",
+    ".git/**"
+  ],
+  "username": "brvillas",
+  "watch": [],
+  "useAgent": true,
+  "transport": "scp"
+}

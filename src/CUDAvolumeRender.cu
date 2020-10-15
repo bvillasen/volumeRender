@@ -142,7 +142,8 @@ __global__ void d_render(uint *d_output, uint imageW, uint imageH, float density
     if (col.w == 1) col.w*=0.05; // Box borders frame uniform density
     else col.w *= density;
     
-    col.w *= sqrt(sample);
+    // col.w *= sqrt(sample);
+    col.w *= sample;
     // col.w *= sample*sample;
 
     // "under" operator for back-to-front blending

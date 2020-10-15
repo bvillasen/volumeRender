@@ -8,6 +8,7 @@ import numpy as np
 
 
 def load_snapshot_data_grid( nSnap, inputDir ):
+  print 'grid'
   inFileName = 'grid_{0:03}.h5'.format(nSnap)
   snapFile = h5.File( inputDir + inFileName, 'r')
   t = snapFile.attrs['t']
@@ -25,8 +26,8 @@ def load_snapshot_data_grid( nSnap, inputDir ):
   #   if key in inputKeys: grid_keys.append( key )
   for key in grid_keys:
     data_grid[key] = snapFile[key]
-    data_grid['min_'+key] = snapFile.attrs['min_'+key]
-    data_grid['max_'+key] = snapFile.attrs['max_'+key]
+    # data_grid['min_'+key] = snapFile.attrs['min_'+key]
+    # data_grid['max_'+key] = snapFile.attrs['max_'+key]
   return data_grid
 
 # dataDir = '/home/bruno/Desktop/data/'

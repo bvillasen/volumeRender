@@ -24,12 +24,17 @@ def get_data( nSnap, inDir, data_parameters, stats=None ):
         global_data_parameters['current_a'] = data_cholla['current_a']
         data_dic['current_z'] = data_cholla['current_z']
         data_dic['current_a'] = data_cholla['current_a']
-        # data = data_cholla[field][:128, :128, :128]
-      data = data_cholla[field][...]
+      # data = data_cholla[field][...]
       data_dic['data'] = data
     if type == 'grid':
       data_cholla = load_snapshot_data_grid( nSnap, inDir )
       data = data_cholla[field][...]
+      # #Add Global min:
+      # min_clip = None
+      # max_clip = None
+      # print "Applying Clip: min:{0}    max:{1}".format(min_clip, max_clip)
+      # data = np.clip( data, a_min = min_clip, a_max=max_clip)
+      # data = data_cholla[field][:, :256, :256]
       data_dic['data'] = data
       if data_cholla.get('current_z') != None:
         global_data_parameters['current_z'] = data_cholla['current_z']
@@ -169,9 +174,11 @@ def prepare_data( plotData,  data_parameters, stats=None ):
   if normalize == 'global':
     max_global = stats['max_global']
     min_global = stats['min_global']
+    print "Global min:{0}    max{1}".format( min_global, max_global)
     max_all = max_global - min_global
     plotData -= min_global
     if log :
+      
       log_max =  np.log10( max_all + 1)
       plotData = np.log10(plotData + 1)
       plotData /= log_max

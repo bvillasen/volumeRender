@@ -53,6 +53,25 @@ render_text = {}
 width_GL = 512*2
 height_GL = 512*2
 
+def set_transparency_center( nSnap, z ):
+  offset = 0.3
+  print "current_z: {0}".format(z)
+  offset_0 = 0.01
+  offset_1 = 0.7
+  offset_2 = 0.35
+  offset_max = 0.50
+  z_0 = 15.15
+  z_1 = 6.1
+  z_2 = 0
+  if z > z_0:
+    offset = offset_0
+  elif z > z_1:
+    offset = offset_0 + ( offset_1 - offset_0 )/(z_1 - z_0)*(z-z_0) 
+  elif z >= z_2:
+    offset = offset_1 + ( offset_2 - offset_1 )/(z_2 - z_1)*(z-z_1) 
+  if offset > offset_max: offset = offset_max 
+  return offset 
+
 def glut_print( x,  y,  font,  text, r,  g , b , a):
 
   blending = False 
