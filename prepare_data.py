@@ -31,5 +31,14 @@ box_size = [ Lbox, Lbox, Lbox ]
 grid_size = [ 1024, 1024, 1024 ] #Size of the simulation grid
 subgrid = [ [0, 1024], [0, 1024], [0, 1024] ] #Size of the volume to load
 data = load_snapshot_data_distributed( n_snapshot, inDir, data_type, fields, subgrid,  precision, proc_grid,  box_size, grid_size, show_progess=True )
-density = data[data_type]['density']  
+
+field = 'density'
+
+data_vals = data[data_type][field]  
+
+
+max_val = data_vals.max() / 10
+min_val = data_vals.min()
+
+data_vals = np.clip( data_vals, a_min=min_val, a_max=max_val ) 
 
