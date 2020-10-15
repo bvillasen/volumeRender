@@ -36,12 +36,12 @@ data = load_snapshot_data_distributed( n_snapshot, inDir, data_type, fields, sub
 field = 'density'
 
 data_vals = data[data_type][field]  
-data_vals = np.log10(data_vals + 1)
 data_vals -= data_vals.min()
 
 # Normalize Data
-max_val = data_vals.max() / 10
-data_vals = np.clip( data_vals, a_min=None, a_max=max_val ) 
+max_val = data_vals.max() 
+data_vals = np.log10(data_vals + 1) / np.log10( max_val + 1)
+# data_vals = np.clip( data_vals, a_min=None, a_max=max_val ) 
 data_vals = data_vals  /  max_val 
 
 # Change to 256 range

@@ -88,6 +88,12 @@ nz, ny, nx = data_to_render_list[0].shape
 nWidth, nHeight, nDepth = nx, ny, nz
 
 #Set the parameters for rendering each field
+# volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':0.5, "transp_ramp": 1., 'density':0.01, "brightness":2.0, 'transfer_offset': 0., 'transfer_scale': 1. }
+# volumeRender.render_parameters[0]['colormap']['main'] = 'palettable'
+# volumeRender.render_parameters[0]['colormap']['name'] = 'haline'
+# volumeRender.render_parameters[0]['colormap']['type'] = 'cmocean'
+
+
 # # DM Density
 # volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':0.46, "transp_ramp": 2.0, 'density':0.089, "brightness":2.0, 'transfer_offset': 0, 'transfer_scale': 1.0 }
 # volumeRender.render_parameters[0]['colormap']['main'] = 'matplotlib'
@@ -98,6 +104,7 @@ volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 't
 volumeRender.render_parameters[0]['colormap']['main'] = 'palettable'
 volumeRender.render_parameters[0]['colormap']['name'] = 'haline'
 volumeRender.render_parameters[0]['colormap']['type'] = 'cmocean'
+
 
 # # Gas Temperature
 # volumeRender.render_parameters[0] = { 'transp_type':'sigmoid',  'colormap':{}, 'transp_center':0.3, "transp_ramp": 3., 'density':0.01, "brightness":2.0, 'transfer_offset':0.06 , 'transfer_scale': 1.15 }
