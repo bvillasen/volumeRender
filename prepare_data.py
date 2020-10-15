@@ -48,8 +48,8 @@ data_vals = ( data_vals - min_val ) / ( max_val - min_val )
 data_vals = (255*(data_vals)).astype(np.uint8)
 
 #Write to file
-out_file_name = outDir + 'snapshot_{0}.h5'.format( n_snapshot )
+out_file_name = outDir + 'snapshot_{0}_{1}.h5'.format( field, n_snapshot )
 out_file = h5.File( out_file_name, 'w')
-
+out_file.create_dataset( field, data=data_vals )
 out_file.close()
 print( "Saved File: " + out_file_name )
