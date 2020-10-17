@@ -10,11 +10,12 @@ from tools import create_directory
 from load_data_cholla_distributed import load_snapshot_data_distributed
 
 #Load Snapshot Data
+nPoints = 2048
 
 # dataDir = '/raid/bruno/data/'
 dataDir = '/data/groups/comp-astro/bruno/'
-inDir = dataDir + 'cosmo_sims/2048_hydro_50Mpc/output_files_pchw18/'
-outDir = dataDir + 'cosmo_sims/2048_hydro_50Mpc/snapshots_prepared/'
+inDir = dataDir + 'cosmo_sims/{0}_hydro_50Mpc/output_files_pchw18/'.format(nPoints)
+outDir = dataDir + 'cosmo_sims/{0}_hydro_50Mpc/snapshots_prepared/'.format(nPoints)
 create_directory( outDir )
 
 n_snapshot = 169
@@ -27,9 +28,8 @@ fields = ['density']
 precision = np.float32
 
 Lbox = 5000    #kpc/h
-nPoints = 2048
-# proc_grid = [ 4, 2, 2]
-proc_grid = [ 8, 8, 8]
+proc_grid = [ 4, 2, 2]
+# proc_grid = [ 8, 8, 8]
 box_size = [ Lbox, Lbox, Lbox ]
 grid_size = [ nPoints, nPoints, nPoints ] #Size of the simulation grid
 subgrid = [ [0, nPoints], [0, nPoints], [0, nPoints] ] #Size of the volume to load
@@ -41,7 +41,7 @@ data_vals = data[data_type][field]
 data_vals -= data_vals.min()
 
 # Normalize Data
-max_val = data_vals.max() / 100 
+max_val = data_vals.max() / 500 
 data_vals = np.clip( data_vals, a_min=None, a_max=max_val ) 
 data_vals = np.log10(data_vals + 1) / np.log10( max_val + 1)
 

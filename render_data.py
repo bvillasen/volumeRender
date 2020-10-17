@@ -14,7 +14,7 @@ currentDirectory = os.getcwd()
 srcDirectory = currentDirectory + "/src/"
 dataDirectory = currentDirectory + "/data_src/"
 sys.path.extend([ srcDirectory, dataDirectory ] )
-import volumeRender_new as volumeRender
+import volumeRender_single as volumeRender
 from cudaTools import setCudaDevice, getFreeMemory, gpuArray3DtocudaArray, np3DtoCudaArray
 from render_functions import *
 from data_functions import *
@@ -112,8 +112,8 @@ volumeRender.render_parameters[0]['colormap']['type'] = 'cmocean'
 # volumeRender.render_parameters[0]['colormap']['name'] = 'jet'
 
 #Initialize openGL
-volumeRender.width_GL = int( 512*4 )
-volumeRender.height_GL = int( 512*4 )
+volumeRender.width_GL = int( 512*4  )
+volumeRender.height_GL = int( 512*4  )
 volumeRender.nTextures = nFields
 volumeRender.nWidth = nWidth
 volumeRender.nHeight = nHeight
@@ -142,10 +142,10 @@ def sendToScreen( ):
 ########################################################################
 
 def stepFunction():
-  global  nSnap
+  global  nSnap 
   # volumeRender.render_parameters[0]['transp_center'] = volumeRender.set_transparency_center( nSnap, z)
   # print "Transparency center = {0}".format(volumeRender.render_parameters[0]['transp_center'])
-  volumeRender.Change_Rotation_Angle( rotation_angle )
+  # volumeRender.Change_Rotation_Angle( rotation_angle )
   sendToScreen( )
 
 ########################################################################
