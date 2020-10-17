@@ -88,10 +88,10 @@ nz, ny, nx = data_to_render_list[0].shape
 nWidth, nHeight, nDepth = nx, ny, nz
 
 #Set the parameters for rendering each field
-# volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':0.5, "transp_ramp": 1., 'density':0.01, "brightness":2.0, 'transfer_offset': 0., 'transfer_scale': 1. }
-# volumeRender.render_parameters[0]['colormap']['main'] = 'palettable'
-# volumeRender.render_parameters[0]['colormap']['name'] = 'haline'
-# volumeRender.render_parameters[0]['colormap']['type'] = 'cmocean'
+volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':0., "transp_ramp": 2., 'density':0.03, "brightness":2.0, 'transfer_offset': 0.05, 'transfer_scale': 1.2 }
+volumeRender.render_parameters[0]['colormap']['main'] = 'palettable'
+volumeRender.render_parameters[0]['colormap']['name'] = 'haline'
+volumeRender.render_parameters[0]['colormap']['type'] = 'cmocean'
 
 
 # # DM Density
@@ -100,10 +100,10 @@ nWidth, nHeight, nDepth = nx, ny, nz
 # volumeRender.render_parameters[0]['colormap']['name'] = 'CMRmap'
 # 
 # # Gas Density
-volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':-0.13, "transp_ramp": 2.25, 'density':0.03, "brightness":2.0, 'transfer_offset': 0.049, 'transfer_scale': 1.88 }
-volumeRender.render_parameters[0]['colormap']['main'] = 'palettable'
-volumeRender.render_parameters[0]['colormap']['name'] = 'haline'
-volumeRender.render_parameters[0]['colormap']['type'] = 'cmocean'
+# volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':-0.13, "transp_ramp": 2.25, 'density':0.03, "brightness":2.0, 'transfer_offset': 0.049, 'transfer_scale': 1.88 }
+# volumeRender.render_parameters[0]['colormap']['main'] = 'palettable'
+# volumeRender.render_parameters[0]['colormap']['name'] = 'haline'
+# volumeRender.render_parameters[0]['colormap']['type'] = 'cmocean'
 
 
 # # Gas Temperature
