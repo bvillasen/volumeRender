@@ -45,7 +45,7 @@ for nSnap in range(nFiles):
       stats[field]['min_vals'] = []
       stats[field]['max_vals'] = []
   for field in fields:
-    print( data_cholla.keys())
+    # print( data_cholla.keys())
     # data = data_cholla[field][...]
     # stats[field]['min_vals'].append( data.min() )
     # stats[field]['max_vals'].append( data.max() )
