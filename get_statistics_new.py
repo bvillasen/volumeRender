@@ -24,7 +24,7 @@ fields = ['density' ]
 
 
 
-nFiles = 3
+nFiles = 170
 
 stats = None
 for nSnap in range(nFiles):
