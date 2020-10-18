@@ -23,7 +23,7 @@ data_type = 'hydro'
 # data_type = 'particles'
 
 # Load Statistics
-statistics = h5.File( stats_dir + 'stats_{0}.h5'.format(data_type))
+statistics = h5.File( stats_dir + 'stats_{0}.h5'.format(data_type), 'r')
 
 fields = ['density']
 precision = np.float32
