@@ -29,8 +29,6 @@ nFiles = 3
 stats = None
 for nSnap in range(nFiles):
   
-  
-
   precision = np.float32
   Lbox = 5000    #kpc/h
   if nPoints == 1024: proc_grid = [ 4, 2, 2]
