@@ -26,7 +26,7 @@ dataDir = '/home/bruno/Desktop/ssd_0/data/'
 # inDir = dataDir + 'cosmo_sims/cholla_pm/256_cool_uv_50Mpc/data_PPMC_HLLC_SIMPLE_eta0.001_0.0400/'
 # inDir = dataDir + 'cosmo_sims/cholla_pm/sphere_explosion/data_ppmp/'
 # inDir = dataDir + 'cosmo_sims/cholla_pm/256_dm_50Mpc/data/'
-inDir = dataDir + 'cosmo_sims/1024_hydro_50Mpc/snapshots_prepared/'
+inDir = dataDir + 'cosmo_sims/2048_hydro_50Mpc/snapshots_prepared/'
 outDir = '/home/bruno/Desktop/cosmo_gas/'
 
 
@@ -42,7 +42,7 @@ n_image = 0
 
 load_stats = False
 
-rotation_angle = 60
+rotation_angle = 0
 
 
 
@@ -53,6 +53,9 @@ data_field = 'density'
 normalization = 'local'
 log_data = True
 n_border = 2
+
+volumeRender.viewTranslation[2] = -1.3
+
 
 if normalization == 'global': load_stats = True
 
@@ -72,10 +75,7 @@ data_parameters[0]['data_field'] = 'density'
 # data_parameters[0]['data_type'] = 'hydro'
 # data_parameters[0]['data_field'] = 'temperature'
 
-volumeRender.render_text['x'] = -0.45
-volumeRender.render_text['y'] = 0.45
-volumeRender.render_text['text'] = ''
-
+volumeRender.scaleX = 2
 
 
 
@@ -88,10 +88,10 @@ nz, ny, nx = data_to_render_list[0].shape
 nWidth, nHeight, nDepth = nx, ny, nz
 
 #Set the parameters for rendering each field
-# volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':0.5, "transp_ramp": 1., 'density':0.01, "brightness":2.0, 'transfer_offset': 0., 'transfer_scale': 1. }
-# volumeRender.render_parameters[0]['colormap']['main'] = 'palettable'
-# volumeRender.render_parameters[0]['colormap']['name'] = 'haline'
-# volumeRender.render_parameters[0]['colormap']['type'] = 'cmocean'
+volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':0.13, "transp_ramp": 2., 'density':0.04, "brightness":2.9, 'transfer_offset': 0.05, 'transfer_scale': 1.00 }
+volumeRender.render_parameters[0]['colormap']['main'] = 'palettable'
+volumeRender.render_parameters[0]['colormap']['name'] = 'haline'
+volumeRender.render_parameters[0]['colormap']['type'] = 'cmocean'
 
 
 # # DM Density
@@ -100,10 +100,10 @@ nWidth, nHeight, nDepth = nx, ny, nz
 # volumeRender.render_parameters[0]['colormap']['name'] = 'CMRmap'
 # 
 # # Gas Density
-volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':-0.13, "transp_ramp": 2.25, 'density':0.03, "brightness":2.0, 'transfer_offset': 0.049, 'transfer_scale': 1.88 }
-volumeRender.render_parameters[0]['colormap']['main'] = 'palettable'
-volumeRender.render_parameters[0]['colormap']['name'] = 'haline'
-volumeRender.render_parameters[0]['colormap']['type'] = 'cmocean'
+# volumeRender.render_parameters[0] = { 'transp_type':'sigmoid', 'colormap':{}, 'transp_center':-0.13, "transp_ramp": 2.25, 'density':0.03, "brightness":2.0, 'transfer_offset': 0.049, 'transfer_scale': 1.88 }
+# volumeRender.render_parameters[0]['colormap']['main'] = 'palettable'
+# volumeRender.render_parameters[0]['colormap']['name'] = 'haline'
+# volumeRender.render_parameters[0]['colormap']['type'] = 'cmocean'
 
 
 # # Gas Temperature
@@ -112,7 +112,7 @@ volumeRender.render_parameters[0]['colormap']['type'] = 'cmocean'
 # volumeRender.render_parameters[0]['colormap']['name'] = 'jet'
 
 #Initialize openGL
-volumeRender.width_GL = int( 512*4  )
+volumeRender.width_GL = int( 512*4 * volumeRender.scaleX )
 volumeRender.height_GL = int( 512*4  )
 volumeRender.nTextures = nFields
 volumeRender.nWidth = nWidth
@@ -142,10 +142,11 @@ def sendToScreen( ):
 ########################################################################
 
 def stepFunction():
-  global  nSnap
+  global  nSnap, rotation_angle 
   # volumeRender.render_parameters[0]['transp_center'] = volumeRender.set_transparency_center( nSnap, z)
   # print "Transparency center = {0}".format(volumeRender.render_parameters[0]['transp_center'])
-  volumeRender.Change_Rotation_Angle( rotation_angle )
+  # rotation_angle += 2
+  # volumeRender.Change_Rotation_Angle( rotation_angle )
   sendToScreen( )
 
 ########################################################################
