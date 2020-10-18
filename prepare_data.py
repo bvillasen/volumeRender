@@ -43,30 +43,29 @@ print( "Min: {0}   Max: {1}".format(min_val, max_val ))
 
 
 
+n_snapshot = 169
 # for n_snapshot in range(170):
 
-  # data = load_snapshot_data_distributed( n_snapshot, inDir, data_type, fields, subgrid,  precision, proc_grid,  box_size, grid_size, show_progess=True )
+data = load_snapshot_data_distributed( n_snapshot, inDir, data_type, fields, subgrid,  precision, proc_grid,  box_size, grid_size, show_progess=True )
 
 
-  # data_vals = data[data_type][field]  
-  # # min_val = data_vals.min()
-  # data_vals -= min_val
-  # 
-  # 
-  # # Normalize Data
-  # # max_val = data_vals.max()
-  # max_val = max_val / 1000 
-  # data_vals = np.clip( data_vals, a_min=None, a_max=max_val ) 
-  # data_vals = np.log10(data_vals + 1) / np.log10( max_val + 1)
-  # 
-  # 
-  # 
-  # # Change to 256 range
-  # data_vals = (255*(data_vals)).astype(np.uint8)
-  # 
-  # #Write to file
-  # out_file_name = outDir + '{0}_{1}_{2}.h5'.format( data_type, field, n_snapshot )
-  # out_file = h5.File( out_file_name, 'w')
-  # out_file.create_dataset( field, data=data_vals )
-  # out_file.close()
-  # print( "Saved File: " + out_file_name )
+data_vals = data[data_type][field]  
+data_vals -= min_val
+
+
+# Normalize Data
+max_val = (max_val - min_val) / 1000 
+data_vals = np.clip( data_vals, a_min=None, a_max=max_val ) 
+data_vals = np.log10(data_vals + 1) / np.log10( max_val + 1)
+
+
+
+# Change to 256 range
+data_vals = (255*(data_vals)).astype(np.uint8)
+
+#Write to file
+out_file_name = outDir + '{0}_{1}_{2}.h5'.format( data_type, field, n_snapshot )
+out_file = h5.File( out_file_name, 'w')
+out_file.create_dataset( field, data=data_vals )
+out_file.close()
+print( "Saved File: " + out_file_name )
