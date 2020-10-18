@@ -64,7 +64,7 @@ for field in fields:
   print( '{0}: min:{1}'.format( fields, stats[field]['min_vals']  ))
   print( '{0}: max:{1}'.format( fields, stats[field]['max_vals']  ))
 
-
+outFileName = 'stats_{0}.h5'.format(data_type)
 outFile = h5.File( outDir + outFileName, 'w' )
 for field in fields:
   group = outFile.create_group( field )
