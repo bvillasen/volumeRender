@@ -254,7 +254,7 @@ def get_invViewMatrix( indx=0 ):
   invViewMatrix = np.arange(12).astype(np.float32)
   modelView = get_model_view_matrix( indx )
   if nTextures == 1: modelView *= -1
-  invViewMatrix[0] = modelView[0]/scaleX
+  invViewMatrix[0] = modelView[0]*scaleX
   invViewMatrix[1] = modelView[4]
   invViewMatrix[2] = modelView[8]
   invViewMatrix[3] = modelView[12]
@@ -294,7 +294,7 @@ def display():
 
     # draw textured quad
     glBegin(GL_QUADS)
-    dx = 0.5 * 2
+    dx = 0.5 * 2 * scaleX
     Lx = dx * nTextures
     #First Vertex
     vertex_y = -0.5
@@ -320,10 +320,10 @@ def display():
     glEnd()
     glBindTexture(GL_TEXTURE_2D, 0)
     
-    if render_text != {}:
-      text_x, text_y = render_text['x'], render_text['y']
-      text_str = render_text['text']
-      glut_print( text_x, text_y , GLUT_BITMAP_TIMES_ROMAN_24 , text_str , 1.0 , 1.0 , 1.0 , 1.0 )
+    # if render_text != {}:
+    #   text_x, text_y = render_text['x'], render_text['y']
+    #   text_str = render_text['text']
+    #   glut_print( text_x, text_y , GLUT_BITMAP_TIMES_ROMAN_24 , text_str , 1.0 , 1.0 , 1.0 , 1.0 )
   glutSwapBuffers();
   timer = time.time() - timer
   computeFPS()

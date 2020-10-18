@@ -10,7 +10,7 @@ from tools import create_directory
 from load_data_cholla_distributed import load_snapshot_data_distributed
 
 #Load Snapshot Data
-nPoints = 1024
+nPoints = 2048
 
 # dataDir = '/raid/bruno/data/'
 dataDir = '/data/groups/comp-astro/bruno/'
@@ -28,8 +28,8 @@ fields = ['density']
 precision = np.float32
 
 Lbox = 5000    #kpc/h
-proc_grid = [ 4, 2, 2]
-# proc_grid = [ 8, 8, 8]
+if nPoints == 1024: proc_grid = [ 4, 2, 2]
+if nPoints == 2048: proc_grid = [ 8, 8, 8]
 box_size = [ Lbox, Lbox, Lbox ]
 grid_size = [ nPoints, nPoints, nPoints ] #Size of the simulation grid
 subgrid = [ [0, nPoints], [0, nPoints], [0, nPoints] ] #Size of the volume to load
