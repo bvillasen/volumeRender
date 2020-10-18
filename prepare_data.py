@@ -10,7 +10,7 @@ from tools import create_directory
 from load_data_cholla_distributed import load_snapshot_data_distributed
 
 #Load Snapshot Data
-nPoints = 2048
+nPoints = 1024
 
 # dataDir = '/raid/bruno/data/'
 dataDir = '/data/groups/comp-astro/bruno/'
