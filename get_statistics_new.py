@@ -45,7 +45,7 @@ for nSnap in range(nFiles):
       stats[field]['min_vals'] = []
       stats[field]['max_vals'] = []
   for field in fields:
-    print data_cholla.keys()
+    print( data_cholla.keys())
     # data = data_cholla[field][...]
     # stats[field]['min_vals'].append( data.min() )
     # stats[field]['max_vals'].append( data.max() )
@@ -61,8 +61,8 @@ for field in fields:
   stats[field]['max_vals'] = np.array( stats[field]['max_vals'] )
   stats[field]['min_global'] = stats[field]['min_vals'].min()
   stats[field]['max_global'] = stats[field]['max_vals'].max()
-  print '{0}: min:{1}'.format( fields, stats[field]['min_vals']  )
-  print '{0}: max:{1}'.format( fields, stats[field]['max_vals']  )
+  print( '{0}: min:{1}'.format( fields, stats[field]['min_vals']  ))
+  print( '{0}: max:{1}'.format( fields, stats[field]['max_vals']  ))
 
 
 outFile = h5.File( outDir + outFileName, 'w' )
