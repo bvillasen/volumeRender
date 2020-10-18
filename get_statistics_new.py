@@ -36,7 +36,7 @@ for nSnap in range(nFiles):
   box_size = [ Lbox, Lbox, Lbox ]
   grid_size = [ nPoints, nPoints, nPoints ] #Size of the simulation grid
   subgrid = [ [0, nPoints], [0, nPoints], [0, nPoints] ] #Size of the volume to load
-  data = load_snapshot_data_distributed( n_snapshot, inDir, data_type, fields, subgrid,  precision, proc_grid,  box_size, grid_size, show_progess=True, get_statistics=True )
+  data = load_snapshot_data_distributed( nSnap, inDir, data_type, fields, subgrid,  precision, proc_grid,  box_size, grid_size, show_progess=True, get_statistics=True )
   
   if stats == None:
     stats = {}
